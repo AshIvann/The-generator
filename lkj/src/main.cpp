@@ -22,7 +22,12 @@
     #define MOSI 7
     #define CS 6
     #define SCK 5
+
+    #define R0 0x00
+    #define R1 0x01
+    #define R7 0x07
 */
+
 
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
@@ -64,7 +69,7 @@ void loop() {
     tft.setRotation(0);
     
     tft.setTextSize(2);
-    tft.setTextColor(color[i % 7 ]);
+    tft.setTextColor(color[i % 7]);
     tft.print(i);
     tft.setTextColor(0x0000);                                 //    вывод чисел 
     tft.print(";");
@@ -75,6 +80,9 @@ void loop() {
   }
  
 
+
+
+  
 
 
 
