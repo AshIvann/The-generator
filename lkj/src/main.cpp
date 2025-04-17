@@ -37,10 +37,9 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
  void writeRegister();
 
 
-void setup() 
-{
-  tft.init(240, 320);
-  tft.fillScreen((uint16_t)(-1));
+void setup(){
+    tft.init(240, 320);
+    tft.fillScreen((uint16_t)(-1));
 }
 
 
@@ -51,33 +50,31 @@ uint16_t cnt_x = 0;
 int x= 0;
 int y = 0;
 void loop() {
-  //tft.fillScreen(ST77XX_BLACK);
-  //tft.setCursor(x, y);
-  
-   uint32_t color[9] = 
-   {
-    0x07E0,
-    0x001F,
-    0xF81F,
-    0xFC00,
-    0xF800,
-    0x0000, 
-    0x07FF, 
-  };
-  for(int i = 0; i< 100; i++)
-  { 
-    tft.setRotation(0);
-    
-    tft.setTextSize(2);
-    tft.setTextColor(color[i % 7]);
-    tft.print(i);
-    tft.setTextColor(0x0000);                                 //    вывод чисел 
-    tft.print(";");
-    
-    if(i % 10 >9 )
-    tft.setCursor(0, y + 5);
-    delay(100); 
-  }
+    //tft.fillScreen(ST77XX_BLACK);
+    //tft.setCursor(x, y);
+
+    uint32_t color[9] = {
+        0x07E0,
+        0x001F,
+        0xF81F,
+        0xFC00,
+        0xF800,
+        0x0000, 
+        0x07FF, 
+    };
+    for(int i = 0; i< 100; i++){
+        tft.setRotation(0);
+
+        tft.setTextSize(2);
+        tft.setTextColor(color[i % 7]);
+        tft.print(i);
+        tft.setTextColor(0x0000);                                 //    вывод чисел 
+        tft.print(";");
+
+        if(i % 10 >9 )
+            tft.setCursor(0, y + 5);
+        delay(100); 
+    }
  
 
 
@@ -102,10 +99,10 @@ for (int16_t x=0; x < tft.width(); x+=5) {
 
 void testdrawtext(char *text, uint16_t color) 
 { 
-  tft.setCursor(0, 0);
-  tft.setTextColor(color);
-  tft.setTextWrap(true);
-  tft.print(text);
+    tft.setCursor(0, 0);
+    tft.setTextColor(color);
+    tft.setTextWrap(true);
+    tft.print(text);
 }
 void writeRegister(uint8_t address, uint16_t data)
 {
