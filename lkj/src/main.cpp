@@ -70,16 +70,28 @@
   #define R74 0x4A
   #define R75 0x4B
   #define R78 0x4E
-  
-  
-  
-  
-  
-  
-  
+  #define R79 0x4F
+  #define R80 0x50
+  #define R96 0x60
+  #define R97 0x61
+  #define R98 0x62
+  #define R99 0x63
+  #define R100 0x64
+  #define R101 0x65
+  #define R102 0x66
+  #define R103 0x67
+  #define R104 0x68
+  #define R105 0x69
+  #define R106 0x6A
 
 
 
+
+  
+  
+  
+  
+  
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
@@ -110,49 +122,118 @@ void setup()
   writeRegister(R0, 0b0010010000011100);
 
   writeRegister(R78, 0b0000000000000011);
-  writeRegister(R75, 0b0000100001000000);   //выбор значения CHDIV, используется когда навыход идет сигнал с channel divider, для этого его нужно активировать в R31
+  writeRegister(R75, 0b0000101100000000);   //выбор значения CHDIV, используется когда навыход идет сигнал с channel divider, для этого его нужно активировать в R31
   writeRegister(R74, 0b0000000000000000);
   writeRegister(R73, 0b0000000000111111);                                //разобраться с  SYSREF, вообще что это и для чего
   writeRegister(R72, 0b0000000000000001);  //как я понял, он нужен для работы с внешними ацп и тд               //разобраться с  SYSREF, вообще что это и для чего 
   writeRegister(R71, 0b0000000010000001);                                 //Проверить все, разобраться с  SYSREF_--- и тому подобным)
   
-
-    
-  
   writeRegister(R70, 0b1100001101010000);    //можно заменить на 0, влияет тольео на задержку, тк VCO_PHASE_SYNC = 0
   writeRegister(R69, 0b0000000000000000);
   writeRegister(R60, 0b0000000000000000);    // задержка 
-  writeRegister(R59, 0b0000000000000001);    //??????? lock detect type
-  writeRegister(R46, 0b0000011111111101);    //выбор какой сигнал пойдет на выход A, channel devider или VCO или VCO2X или High impedance
-  writeRegister(R45, 0b1100100011011111);    //выбор какой сигнал пойдет на выход A, channel devider или VCO или VCO2X или High impedance
-  writeRegister(R44, 0b0001111110100011);    //Output B powered down,Output A Active,OUTA_PWR = 
+  writeRegister(R59, 0b0000000000000000);    //??????? lock detect type
+  writeRegister(R46, 0b0000011111111100);    //выбор какой сигнал пойдет на выход A, channel devider или VCO или VCO2X или High impedance
+  
+  
+  writeRegister(R45, 0b1100000011001111);    //выбор какой сигнал пойдет на выход A, channel devider или VCO или VCO2X или High impedance
+  writeRegister(R44, 0b0000111100100011);    //Output B powered down,Output A Active,OUTA_PWR = 
+  
   writeRegister(R43, 0b0000000000000000);    //PLL_NUM = 0 
   writeRegister(R42, 0b0000000000000000);    //PLL_NUM = 0
   writeRegister(R41, 0b0000000000000000);                                             //MASH_SEED тк в R37 0 поставил в D15
   writeRegister(R40, 0b0000000000000000);                                             //MASH_SEED тк в R37 0 поставил в D15
-  writeRegister(R39, 0b0000001111101000);    //PLL_DEN неважен, тк числитель 0
-  writeRegister(R38, 0b0000000000000000);    //PLL_DEN неважен, тк числитель 0
-  writeRegister(R37, 0b0000010000000100);                                             //разобраться сMASH _SEE D_EN и настройка PFD_DLY_SEL, которая зависит от частоты VCO и N
-  writeRegister(R36, 0b0000000111110101);   //PLL_N = 501
+  writeRegister(R39, 0b0000001111101000);    //пока что PLL_DEN неважен, тк числитель 0
+  writeRegister(R38, 0b0000000000000000);    //пока что PLL_DEN неважен, тк числитель 0
+  writeRegister(R37, 0b0000001100000100);                                             //разобраться сMASH _SEE D_EN и настройка PFD_DLY_SEL, которая зависит от частоты VCO и N
+  writeRegister(R36, 0b0000000110000000);   //PLL_N = 384
   writeRegister(R34, 0b0000000000000000);   //PLL_N =????зачем этот регистр 
-  writeRegister(R31, 0b0000001111101100);   //CHDIV_DIV2 = 0, используется когда нужна относительно небольшая частотыа на выходе(стр21-22)   
+
+  writeRegister(R31, 0b0100001111101100);   //CHDIV_DIV2 = 0, используется когда нужна относительно небольшая частотыа на выходе(стр21-22)   
   writeRegister(R27, 0b0000000000000010);   //VCO2X_EN = 0
-  writeRegister(R20, 0b1111100001001000);   //Выбран VCO7, хотя вроде как ниначтно не влияет, тк VCO_SEL_FORCE = 0                                  //Не понятно зачем VCO_SEL_STRT_EN, разобраться
+  writeRegister(R20, 0b1100000001001000);   //Выбран invalid(not used), хотя вроде как ниначтно не влияет, тк VCO_SEL_FORCE = 0                                  //Не понятно зачем VCO_SEL_STRT_EN, разобраться
   writeRegister(R19, 0b0010011110110111);   //Как я понял используется для ручного управления скоростью калибровки VCO(VCO_CAPCTRL)                                         //Не понятно зачем, разобраться 
   writeRegister(R17, 0b0000000100101100);   
   writeRegister(R16, 0b0000000010000000);   //Как я понял используется для ручного управления скоростью калибровки VCO(VCO_DACISET)                                        // Возможно не нужно, тк VCO_DACISET_FORCE = 0
   writeRegister(R14, 0b0001111001110000);   //charge-pump current = 15mA
   writeRegister(R12, 0b0101000000000001);   //PLL_R_PRE :1(R12[7:0])
   writeRegister(R11, 0b0000000000011000);   //PLL_R :1 (R11[4:11])
-  writeRegister(R10, 0b0001000011011000);   //MULT *1 (R10[11:7])
+  writeRegister(R10, 0b0001000011011000);   //MULT *1 (R10[11:7]), всегда *1, тк для других опорная частота должна быть не менее 20 MHz
   writeRegister(R9, 0b0001011000000100);    //doubler *2 (R9[12])
   writeRegister(R8, 0b0010000000000000);    //используется для включения VCO_DACISET_FORCE и VCO_CAPCTRL_FORCE(оба выключены, те все должно быть автоматически), для ручного управления скоростью калибровки VCO
   writeRegister(R7, 0b0100000010110010);
   writeRegister(R1, 0b0000100000001000);
   writeRegister(R0, 0b0010010000011100); 
   
+  
+/*
+  //Program RESET = 1 to reset registers
+  //writeRegister(R0, 0b0010010000011110);
+
+  //Program RESET = 0 to remove reset
+  //writeRegister(R0, 0b0010010000011100);
+
+  writeRegister(R45, 0xC0DF); //2D
+  writeRegister(R27, 0x0002); //1B
+  writeRegister(R75, 0x0B80); //4B
+  writeRegister(R44, 0x3FA3); //2C
+  writeRegister(R43, 0x5000); //2B
+  writeRegister(R42, 0x00C3); //2A
+  writeRegister(R36, 0x00CC); //24
+  writeRegister(R0, 0x251C);  //00
+
+*/
+/*
+//попытка использовать ramp mod
+
+// Program RESET = 1 to reset registers
+  writeRegister(R0, 0b0010010000011110);
+
+  //Program RESET = 0 to remove reset
+  writeRegister(R0, 0b0010010000011100);
+
+
+  
+
+  writeRegister(R106, 0b0000000000000000);   // не знаю что такое  RAMP_SCALE_COUNT, пусть равен 0
+
+  //1 ПОСТАВИЛ ПРОСТО ТАК, ЧТОБЫ БЫЛО КАКОЕТО ЧИСЛО, А НЕ 0 В  RAMP_DLY_CNT
+  //Возможно вместо него нужно использовать R98, где есть RAMP0_DLY
+  writeRegister(R105, 0b0000000000000000);    
+  
+  writeRegister(R104, 0b0011010001101110);     // RAMP_LEN1 = 13422
+  writeRegister(R100, 0b0011010001101110);     // RAMP_LEN0 = 13422
+
+  writeRegister(R101, 0b0000000000010001);  //тут  не понятно что делать с  RAMP1_DLY(пока что 0)
+
+  writeRegister(R103, 0b1111100101110010);  //RAMP1_INC = 1 073 740 146
+  writeRegister(R102, 0b0011111111111111);  //RAMP1_INC = 1 073 740 146
+
+  //Возможно нужно будет поменять местами, тк я не знаю с какого регистра начинается запись 
+  writeRegister(R99, 0b1111100101110010);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
+  writeRegister(R98, 0b1111111111111100);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
+
+
+  writeRegister(R97, 0b1000100000000000);   //RAMP0_RST,RAMP_TRIGB, RAMP_TRIGA, RAMP_BURST_TRIG
+  writeRegister(R96, 0b1000000000000000);   // не знаю что ставить в RAMP_BURST_EN, пока что 1 
+
+
+  
+  writeRegister(R80, 0b0000000000000011);      //RAMP_THRESH, почему 11 бит отдельно?
+  writeRegister(R79, 0b0000000010000000);      //RAMP_THRESH, нужно рахобраться какой регистр нужно заполнять первым 
+  writeRegister(R78, 0b0000000000000000);      //RAMP_THRESH
+ 
+  writeRegister(R0, 0b1010010000011100);      //Enable frequency ramping mode
+
+
+  */
+
+  
+
 
 }
+
+
+
 
 
 void loop() {
@@ -193,32 +274,6 @@ for(int i = 0; i< 50; i++)
  
 */
 
-  
-
-
-
-
-
-  /*
-  //опорная частота 
-  writeRegister(R1, 0b0000100000001000);      //CAL_CLK_DIV--> f_osc<200MHz  
-  writeRegister(R9, 0b0001011000000100);      // R9[12]=1, Умножаем опорный сигнал на 2 
-  writeRegister(R12, 0b0101000000000001);     // Делим PLL_R_PRE = 1
-  writeRegister(R10, 0b0001000011011000);     //R10[11;7] = 1; умножаем на 1(это MULT)
-  writeRegister(R11, 0b0000000000011000);     //R11[11;4] = 1; делим на 1(это PLL_R)
-       //charge-pump current = 15mA
-  
-  writeRegister(R43, 0b0000000000000000);     //настройка числителя = 0
-  writeRegister(R38, 0b0000000000000000);     //PLL_DEN
-  writeRegister(R39, 0b0000000000000001);     //PLL_DEN 
-  
-  writeRegister(R34, 0b0000000000000001);  //зачем выделено 3 бита?   // PLL_N = enable
-  writeRegister(R36, 0b0000000111110100);     // PLL_N =500
-
-  writeRegister(R44, 0b0000111100000000 );     //OUT_A/B  active, OUTA_PWR[13:8] = 15
-  writeRegister(R45, 0b1100100011001111 );     //OUT_B_PWR[5:0] = 15,  OUTA_MUX = 1
-
-*/
   
 }
 
