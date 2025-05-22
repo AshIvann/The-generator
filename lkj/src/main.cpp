@@ -27,81 +27,49 @@
  #define READ  3
  #define WRITE 2
  
- byte eeprom_output_data;
- byte eeprom_input_data=0;
  byte clr;
  int address=0;
- //data buffer
- char buffer [128];
-
-void fill_buffer()
-{
-
-  for (int I=0;I<128;I++)
-
-  {
-
-    buffer[I]=I;
-
-  }
-}
  
  
  char spi_transfer(volatile char data)
  {
- 
    SPDR = data;                    // Start the transmission
  
    while (!(SPSR & (1<<SPIF)))     // Wait the end of the transmission
- 
-   {
- 
-   };
+   {};
  
    return SPDR;                    // return the received byte
  }
  
- void setup()
+
+
+void settings_spi()
+{
+  pinMode(SPICLOCK,OUTPUT); 
+  pinMode(CHIPSELECT,OUTPUT);
+  pinMode(DATAOUT,OUTPUT);
+
+  // SPCR = 01010000
+  //interrupt disabled,spi enabled,msb 1st,controller,clk low when idle,
+  //sample on leading edge of clk,system clock/4 rate (fastest)
+
+  SPCR = (1<<SPE)|(1<<MSTR);
+  clr=SPSR;
+  clr=SPDR;
+}
+
+ void setup()//аналог SPISettings
  {
- 
-   Serial.begin(9600);
- 
-  //  pinMode(DATAOUT, OUTPUT);
- 
-  //  pinMode(DATAIN, INPUT);
- 
-   pinMode(SPICLOCK,OUTPUT);
- 
-   pinMode(CHIPSELECT,OUTPUT);
- 
-   digitalWrite(CHIPSELECT,HIGH); //disable device
- 
-   // SPCR = 01010000
-   //interrupt disabled,spi enabled,msb 1st,controller,clk low when idle,
-   //sample on leading edge of clk,system clock/4 rate (fastest)
- 
-   SPCR = (1<<SPE)|(1<<MSTR);
- 
-   clr=SPSR;
- 
-   clr=SPDR;
- 
-   delay(10);
- 
-  }
+    settings_spi();
+}
    
  
- byte read_eeprom(int EEPROM_address)
+ byte send_SPI_byte(uint8_t val1)
  {
-   //READ EEPROM
- 
    int data;
  
    digitalWrite(CHIPSELECT,LOW);
-
- 
-   data = spi_transfer(0xFF); //get data byte
-
+   data = spi_transfer(val1); //get data byte
 
    digitalWrite(CHIPSELECT,HIGH); //release chip, signal end transfer
  
@@ -111,9 +79,9 @@ void fill_buffer()
  
  void loop()
  {
+   
+   address++;
+  uint8_t a = send_SPI_byte(address);
  
-   eeprom_output_data = read_eeprom(address);
-
- 
-   delay(50); //pause for readability
+   delay(100); //pause for readability
  }
