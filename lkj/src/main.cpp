@@ -104,6 +104,20 @@
  uint8_t address=0;
  
  
+ uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) {
+  // Маска для очистки битов 8-13: 0b1100000111111111
+  uint16_t mask = 0xC0FF;
+  // Убедимся, что new_bits содержит только 6 бит
+  new_bits &= 0x3F;
+  // Сдвигаем новые биты на позицию 8
+  uint16_t shifted_bits = (uint16_t)new_bits << 8;
+  // Очищаем биты 8-13 и вставляем новые
+
+  uint16_t final = (original & mask) | shifted_bits;
+
+  writeRegister(0x2C, final);
+}
+
 const int cs = 10; //для проверки 
 void setup() 
   {
@@ -179,14 +193,21 @@ void loop()
   // delay(100);
   // set_freq(150);   //в комент на время 
   // delay(100);
-  uint16_t targe_power = 10;
-  
 
-  uint16_t first = 0b0000000000000000;
-  uint16_t mask = dec_to_bin(targe_power);
-  uint16_t power = first | mask;
-  writeRegister(0x2C, power);
-  delay(1000);
+/*
+  // uint16_t targe_power = 30;
+  
+  // uint16_t first = 0b0000000000000000;
+  // //uint16_t mask = dec_to_bin(targe_power);
+  // uint16_t shifted_mask = dec_to_bin(targe_power) << 8;   попытка 1
+
+  // uint16_t power = first | shifted_mask;
+
+  // writeRegister(0x2C, power);
+  // delay(1000);
+*/
+
+replace_bits_8_to_13(0x1EA3, dec_to_bin(63));
 
 
 
