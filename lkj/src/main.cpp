@@ -92,125 +92,99 @@
  //Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 
- void testdrawtext(char *text, uint16_t color) ;
- void writeRegister(uint8_t address, uint16_t data);
- char spi_transfer(volatile uint8_t data);
- void settings_spi();
- byte send_SPI_byte(uint8_t val1);
- uint16_t dec_to_bin(uint16_t num);
- void set_freq(uint16_t fout);
+ void testdrawtext(char *text, uint16_t color) ;          
+ void writeRegister(uint8_t address, uint16_t data);                      //передача дынных в регистр 
+ char spi_transfer(volatile uint8_t data);                                //настройка SPI
+ void settings_spi();                                                     //настройка SPI
+ byte send_SPI_byte(uint8_t val1);                                        //передача байта по SPI
+ uint16_t dec_to_bin(uint16_t num);                                       //перевод из десятичного числа в двоичное 
+ void set_freq(uint16_t fout, uint16_t power);                                            //установка частоты 
+ 
+ uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits);      //перемещение 6 битов на место 8-13(используется для установки мощности), original изначальный адресс, в котором изменяется 8-13 байт, new_bits биты которые ставятся в 8-13 биты 
+ uint8_t fractional(float number);                                        //отделяет цифры после запятой, возможно пригодится 
 
  byte clr;
  uint8_t address=0;
  
  
- uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) {
-  // Маска для очистки битов 8-13: 0b1100000111111111
-  uint16_t mask = 0xC0FF;
-  // Убедимся, что new_bits содержит только 6 бит
-  new_bits &= 0x3F;
-  // Сдвигаем новые биты на позицию 8
-  uint16_t shifted_bits = (uint16_t)new_bits << 8;
-  // Очищаем биты 8-13 и вставляем новые
-
-  uint16_t final = (original & mask) | shifted_bits;
-
-  writeRegister(0x2C, final);
-}
+ 
 
 const int cs = 10; //для проверки 
 void setup() 
   {
     settings_spi();
   
- 
-
-
-
-// //выдвет 75 МГц
-//   // Program RESET = 1 to reset registers
-//   writeRegister(R0, 0b0010010000011110);
-//   //Program RESET = 0 to remove reset
-//   writeRegister(R0, 0b0010010000011100);
-//   writeRegister(R78, 0x0003);
-//   writeRegister(R75, 0x0B00);
-//   writeRegister(R74, 0x0000);
-//   writeRegister(R73, 0x003F);
-//   writeRegister(R72, 0x0001);
-//   writeRegister(R71, 0x0081);
-//   writeRegister(R70, 0xC350);
-//   writeRegister(R69, 0x0000);
-//   writeRegister(R60, 0x0000);
-//   writeRegister(R59, 0x0001);
-//   writeRegister(R46, 0x07FC);
-//   writeRegister(R45, 0xC0DE);
-//   //writeRegister(R45, 0b1101100011011110);   //No output power boost
-//   //writeRegister(R45, 0b1101000011011110);   //No output power boost
-//   writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
-//   //writeRegister(R44, 0b0001010110100011); //OUTA_PWR =5
-//   //writeRegister(R44, 0b0001010010100011); //OUTA_PWR =20
-//   writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
-//   writeRegister(R43, 0x0000);
-//   writeRegister(R42, 0x0000);
-//   writeRegister(R41, 0x0000);
-//   writeRegister(R40, 0x0000);
-//   writeRegister(R39, 0x000A);
-//   writeRegister(R38, 0x0000);
-//   writeRegister(R37, 0x0304);
-//   writeRegister(R36, 960);                  //N dIVEDER
-//   writeRegister(R34, 0x0000);
-//   writeRegister(R31, 0x43EC);
-//   writeRegister(R27, 0x0002);
-//   writeRegister(R20, 0xE048);
-//   writeRegister(R19, 0x27B7);
-//   writeRegister(R17, 0x012C);
-//   writeRegister(R16, 0x0080);        //в комент на время
-//   writeRegister(R14, 0x1E70);
-//   writeRegister(R12, 0x5002);
-//   writeRegister(R11, 0x0018);
-//   writeRegister(R10, 0x10D8);
-//   writeRegister(R9,  0x1604);
-//   writeRegister(R8,  0x2000);
-//   writeRegister(R7,  0x40B2);
-//   writeRegister(R1,  0x0808);
-//   writeRegister(R0, 0b0010010000011100);
+ //выдвет 75 МГц
+  // Program RESET = 1 to reset registers
+  writeRegister(R0, 0b0010010000011110);
+  //Program RESET = 0 to remove reset
+  writeRegister(R0, 0b0010010000011100);
+  writeRegister(R78, 0x0003);
+  writeRegister(R75, 0x0B00);
+  writeRegister(R74, 0x0000);
+  writeRegister(R73, 0x003F);
+  writeRegister(R72, 0x0001);
+  writeRegister(R71, 0x0081);
+  writeRegister(R70, 0xC350);
+  writeRegister(R69, 0x0000);
+  writeRegister(R60, 0x0000);
+  writeRegister(R59, 0x0001);
+  writeRegister(R46, 0x07FC);
+  //writeRegister(R45, 0xC0DE);
+  //writeRegister(R45, 0b1101100011011110);   //No output power boost
+  //writeRegister(R45, 0b1101000011011110);   //No output power boost
+  writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
+  //writeRegister(R44, 0b0001010110100011); //OUTA_PWR =5
+  //writeRegister(R44, 0b0001010010100011); //OUTA_PWR =20
+  writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
+  writeRegister(R43, 0x0000);
+  writeRegister(R42, 0x0000);
+  writeRegister(R41, 0x0000);
+  writeRegister(R40, 0x0000);
+  writeRegister(R39, 0x000A);
+  writeRegister(R38, 0x0000);
+  writeRegister(R37, 0x0304);
+  writeRegister(R36, 960);                  //N dIVEDER
+  writeRegister(R34, 0x0000);
+  writeRegister(R31, 0x43EC);
+  writeRegister(R27, 0x0002);
+  writeRegister(R20, 0xE048);
+  writeRegister(R19, 0x27B7);
+  writeRegister(R17, 0x012C);
+  writeRegister(R16, 0x0080);        
+  writeRegister(R14, 0x1E70);
+  writeRegister(R12, 0x5002);
+  writeRegister(R11, 0x0018);
+  writeRegister(R10, 0x10D8);
+  writeRegister(R9,  0x1604);
+  writeRegister(R8,  0x2000);
+  writeRegister(R7,  0x40B2);
+  writeRegister(R1,  0x0808);
+  writeRegister(R0, 0b0010010000011100);
             
 
-// delay(5000);
+//delay(5000);
 
 }
 
 
 
-
 void loop()
 {
-  // set_freq(60);
-  // delay(100);
-  // set_freq(70);
-  // delay(100);
-  // set_freq(100);
-  // delay(100);
-  // set_freq(150);   //в комент на время 
-  // delay(100);
-
-/*
-  // uint16_t targe_power = 30;
   
-  // uint16_t first = 0b0000000000000000;
-  // //uint16_t mask = dec_to_bin(targe_power);
-  // uint16_t shifted_mask = dec_to_bin(targe_power) << 8;   попытка 1
 
-  // uint16_t power = first | shifted_mask;
-
-  // writeRegister(0x2C, power);
-  // delay(1000);
-*/
-
-replace_bits_8_to_13(0x1EA3, dec_to_bin(63));
-
-
-
+  
+    set_freq(63, 45);
+    delay(500);
+    set_freq(63, 50);
+    delay(500);
+    set_freq(63, 55);
+    delay(500);
+    set_freq(63, 60);
+    delay(500);
+    set_freq(63, 63);
+    delay(500);
+  
 /*ramp_mode
 
   writeRegister(R112, 0x00);
@@ -238,8 +212,9 @@ replace_bits_8_to_13(0x1EA3, dec_to_bin(63));
 
 //добавить R0
 */
-
 }
+
+
 
 
 // void testdrawtext(char *text, uint16_t color) 
@@ -338,7 +313,7 @@ uint16_t dec_to_bin(uint16_t num)    //Функция для перевода, �
 }
 
 
-void set_freq(uint16_t fout)
+void set_freq(uint16_t fout, uint16_t power)
 {
   int chdiv;
 
@@ -354,6 +329,7 @@ void set_freq(uint16_t fout)
     writeRegister(R45, 0b1101000011011110);   //переключил выход A на VCO Doubler
     writeRegister(R27, 0b0000000000000011);   //включил VCO2X_EN
   }
+
   else if(fout <15000 && fout >7500 )    //VCO
   {
     //VCO
@@ -526,14 +502,36 @@ void set_freq(uint16_t fout)
   writeRegister(R36, PLL_N);
   writeRegister(R43, PLL_NUM);
   writeRegister(R39, 10);
+  writeRegister(R44, replace_bits_8_to_13(0x1EA3, dec_to_bin(power)));
   writeRegister(R0, 0b0010010000011100);
 
-    // int PLL_N = fout / 10;      
-    // int PLL_NUM = fout % 10;
   
-    // writeRegister(R36, PLL_N);
-    // writeRegister(R43, PLL_NUM);
-    // writeRegister(R39, 10);
 
   
+}
+
+uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) {
+  // Маска для очистки битов 8-13: 0b1100000111111111
+  uint16_t mask = 0xC0FF;
+  // Убедимся, что new_bits содержит только 6 бит
+  new_bits &= 0x3F;
+  // Сдвигаем новые биты на позицию 8
+  uint16_t shifted_bits = (uint16_t)new_bits << 8;
+  // Очищаем биты 8-13 и вставляем новые
+
+  uint16_t final = (original & mask) | shifted_bits;
+
+  return final;
+}
+
+uint8_t fractional(float number)          //отделяет цифры после запятой, возможно пригодится 
+{
+  
+    int integer_part = (int)floor(number); // Целая часть
+    float fractional_part = number - integer_part; // Дробная часть
+    int fractional_digits = (int)(fractional_part * 10); // Умножаем на 100, чтобы получить 13
+
+    
+
+    return fractional_digits;
 }
