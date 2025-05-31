@@ -8,9 +8,9 @@
 
 // мои пины для дислпея 
 
-//#define TFT_DC   8     //datacomand 
-//#define TFT_RST  9     //reset
-
+#define TFT_DC   8     //datacomand 
+#define TFT_RST  9     //reset
+#define TFT_CS   7     //chip select
 
 
  //Фрагмент из кода для SPI используются для передачи данных на LMX2595
@@ -89,7 +89,7 @@
 
  
 
- //Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 
  void testdrawtext(char *text, uint16_t color) ;          
@@ -112,8 +112,23 @@
 const int cs = 10; //для проверки 
 void setup() 
   {
-    settings_spi();
+    //settings_spi();
+    
+    tft.init(240, 320);
+    //tft.fillScreen((uint16_t)(-1));
+    tft.fillScreen(ST77XX_BLACK); // Clear screen with black background
+
+    // Set text color and size
+    tft.setTextColor(ST77XX_WHITE);
+    tft.setTextSize(2);
   
+    // Display static labels
+    tft.setCursor(10, 20);
+    tft.print("Freq: ");
+    tft.setCursor(10, 60);
+    tft.print("Power: ");
+
+
  //выдвет 75 МГц
   // Program RESET = 1 to reset registers
   writeRegister(R0, 0b0010010000011110);
@@ -148,7 +163,7 @@ void setup()
   writeRegister(R34, 0x0000);
   writeRegister(R31, 0x43EC);
   writeRegister(R27, 0x0002);
-  writeRegister(R20, 0xE048);
+  writeRegister(R20, 0xE048);                                                            //пока что в комент, в дальнейшем нужно для настройки генератора.
   writeRegister(R19, 0x27B7);
   writeRegister(R17, 0x012C);
   writeRegister(R16, 0x0080);        
@@ -162,28 +177,81 @@ void setup()
   writeRegister(R1,  0x0808);
   writeRegister(R0, 0b0010010000011100);
             
-
-//delay(5000);
-
-}
+  }
 
 
+  uint16_t cnt = 10;
+  uint16_t cnt_x = 0;
+  int x= 0;
+  int y = 0;
 
 void loop()
 {
-  
 
-  
-    set_freq(63, 45);
-    delay(500);
-    set_freq(63, 50);
-    delay(500);
-    set_freq(63, 55);
-    delay(500);
-    set_freq(63, 60);
-    delay(500);
-    set_freq(63, 63);
-    delay(500);
+  uint32_t color[9] = 
+   {
+    0x07E0,   //фиолетовый 
+    0x001F,   //желтый
+    0xF81F,   //зеленый 
+    0xFC00,   //синий 
+    0xF800,   //голубой
+    0x0000,   //белый 
+    0x07FF,    //красный
+  };
+  // for(int i = 0; i< 10; i++)
+  // { 
+  //   tft.setRotation(0);
+    
+  //   tft.setTextSize(2);
+  //   tft.setTextColor(0xFFFF);
+  //   tft.print(i);
+  //   tft.setTextColor(0x07FF);                                 //    вывод чисел 
+  //   tft.print(";");
+    
+  //   if(i % 10 >9 )
+  //   tft.setCursor(0, y + 5);
+  //   delay(100); 
+  // }
+
+
+  uint16_t freq = 40;
+  uint16_t power = 45;
+  for(int i = 1; i < 17; i++ )
+  {
+    
+
+    tft.setRotation(0);
+    tft.setTextSize(2);
+    tft.setTextColor(ST77XX_WHITE);
+
+    tft.setCursor(80, 20);
+    tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
+    tft.print(freq, 1); // Display frequency with 1 decimal place
+    tft.print(" MHz");
+    //tft.print(freq);                                                     
+    tft.setTextColor(ST77XX_WHITE);                                 
+    tft.print(";");
+
+    tft.setCursor(85, 60);
+    tft.fillRect(85, 60, 100, 20, ST77XX_BLACK); // Clear previous value
+    tft.print(power, 1); // Display power with 1 decimal place
+    tft.print(" W");
+    set_freq(freq, 45);
+    delay(5000);
+    freq = freq + 10;
+  }
+
+
+
+
+    // set_freq(25, 50);
+    // delay(2000);        //просто тест      
+    // set_freq(35, 55);
+    // delay(2000);
+    // set_freq(68, 60);
+    // delay(2000);
+    // set_freq(99, 63);
+    // delay(2000);
   
 /*ramp_mode
 
@@ -217,13 +285,13 @@ void loop()
 
 
 
-// void testdrawtext(char *text, uint16_t color) 
-// { 
-//   tft.setCursor(0, 0);
-//   tft.setTextColor(color);
-//   tft.setTextWrap(true);
-//   tft.print(text);
-// }
+void testdrawtext(char *text, uint16_t color) 
+{ 
+  tft.setCursor(0, 0);
+  tft.setTextColor(color);
+  tft.setTextWrap(true);
+  tft.print(text);
+}
 
 char spi_transfer(volatile uint8_t data)
 {
