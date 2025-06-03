@@ -2,6 +2,8 @@
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
+#include <math.h>
+#include "GyverEncoder.h"
 
 
 
@@ -12,6 +14,10 @@
 #define TFT_RST  9     //reset
 #define TFT_CS   7     //chip select
 
+
+#define CLK 2
+#define DT 3
+#define SW 4
 
  //Фрагмент из кода для SPI используются для передачи данных на LMX2595
  #define DATAOUT 11//MOSI     
@@ -83,14 +89,12 @@
  #define R112 0x70
  
 
- 
- 
-
 
  
 
  Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-
+ //Encoder enc1(CLK, DT, SW);
+ Encoder enc1(CLK, DT, SW, TYPE2);
 
  void testdrawtext(char *text, uint16_t color) ;          
  void writeRegister(uint8_t address, uint16_t data);                      //передача дынных в регистр 
@@ -102,6 +106,7 @@
  
  uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits);      //перемещение 6 битов на место 8-13(используется для установки мощности), original изначальный адресс, в котором изменяется 8-13 байт, new_bits биты которые ставятся в 8-13 биты 
  uint8_t fractional(float number);                                        //отделяет цифры после запятой, возможно пригодится 
+ bool isInteger(float number);                                            //проверяет является ли число дробным или нет. Елс целое то возвращает 1, если нет то 0
 
  byte clr;
  uint8_t address=0;
@@ -110,6 +115,15 @@
  
 
 const int cs = 10; //для проверки 
+
+int counter = 75;
+int power_counter = 10;
+int click_counter = 1;
+int increment = 1;
+
+uint16_t freq = 75;          //частота которая вызывается в setup
+uint16_t power = 10;
+
 void setup() 
   {
     //settings_spi();
@@ -125,11 +139,19 @@ void setup()
     // Display static labels
     tft.setCursor(10, 20);
     tft.print("Freq: ");
+    tft.print(freq);
+    tft.print(" MHz");
     tft.setCursor(10, 60);
     tft.print("Power: ");
+    tft.print(power);
+    tft.print(" ???");
+
+    Serial.begin(9600);
+
+    enc1.setTickMode(TYPE2);
 
 
- //выдвет 75 МГц
+ //выдвет 75 МГц                        
   // Program RESET = 1 to reset registers
   writeRegister(R0, 0b0010010000011110);
   //Program RESET = 0 to remove reset
@@ -146,7 +168,6 @@ void setup()
   writeRegister(R59, 0x0001);
   writeRegister(R46, 0x07FC);
   //writeRegister(R45, 0xC0DE);
-  //writeRegister(R45, 0b1101100011011110);   //No output power boost
   //writeRegister(R45, 0b1101000011011110);   //No output power boost
   writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
   //writeRegister(R44, 0b0001010110100011); //OUTA_PWR =5
@@ -177,8 +198,14 @@ void setup()
   writeRegister(R1,  0x0808);
   writeRegister(R0, 0b0010010000011100);
             
-  }
 
+   delay(200); 
+   set_freq(freq, power);
+  
+   
+
+}
+     
 
   uint16_t cnt = 10;
   uint16_t cnt_x = 0;
@@ -187,100 +214,173 @@ void setup()
 
 void loop()
 {
+  enc1.tick();
 
-  uint32_t color[9] = 
-   {
-    0x07E0,   //фиолетовый 
-    0x001F,   //желтый
-    0xF81F,   //зеленый 
-    0xFC00,   //синий 
-    0xF800,   //голубой
-    0x0000,   //белый 
-    0x07FF,    //красный
-  };
-  // for(int i = 0; i< 10; i++)
-  // { 
-  //   tft.setRotation(0);
-    
-  //   tft.setTextSize(2);
-  //   tft.setTextColor(0xFFFF);
-  //   tft.print(i);
-  //   tft.setTextColor(0x07FF);                                 //    вывод чисел 
-  //   tft.print(";");
-    
-  //   if(i % 10 >9 )
-  //   tft.setCursor(0, y + 5);
-  //   delay(100); 
-  // }
+  if(enc1.isClick())
+  { 
+    click_counter = click_counter + 1;
+    if(click_counter % 2 == 1)
+    {
+      tft.setCursor(10, 20);
+      tft.fillRect(8, 40, 160, 2, ST77XX_BLUE);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setTextSize(2);
+      tft.print("Freq: ");
+      tft.fillRect(8, 80, 160, 2, ST77XX_BLACK);
+      
+    }
+    else
+    {
+      tft.setCursor(10, 60);
+      tft.fillRect(8, 80, 160, 2, ST77XX_BLUE);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setTextSize(2);
+      tft.print("Power: ");
+      tft.fillRect(8, 40, 160, 2, ST77XX_BLACK);
+    }
+      
+  }
 
-
-  uint16_t freq = 40;
-  uint16_t power = 45;
-  for(int i = 1; i < 17; i++ )
+  int increment = 1;
+  int power_increment = 1;
+  if(click_counter % 2 == 1)
   {
+    // if (enc1.isHold()) 
+    // {
+    //   increment = 10;
+    // } 
+    // else 
+    // {
+    //   increment = 1;
+    // }
+  
     
+    
+    if (enc1.isRight()) 
+    {
+      counter += increment;
+      tft.setRotation(0);                                            //фрагмент для энкодера, пока что только тест 
+      tft.setTextSize(2);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setCursor(80, 20);
+      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
+      if(counter < 10)
+      {
+        tft.print("error");
+      }
+      else
+      {
+        tft.print(counter);
+        freq = counter;
+        tft.print(" MHz");
+        set_freq(freq, power);
+      }
+    }
+   
+      else if (enc1.isLeft()) 
+      {
+        counter -= increment;
+        tft.setRotation(0);
+        tft.setTextSize(2);
+        tft.setTextColor(ST77XX_WHITE);
+        tft.setCursor(80, 20);
+        tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
+        if(counter< 10)
+        {
+          tft.print("error");
+        }
+        else
+        {
+          tft.print(counter);
+          freq = counter;
+          tft.print(" MHz");
+          set_freq(freq, power);
+        }
+      }
+  } 
 
-    tft.setRotation(0);
-    tft.setTextSize(2);
-    tft.setTextColor(ST77XX_WHITE);
-
-    tft.setCursor(80, 20);
-    tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
-    tft.print(freq, 1); // Display frequency with 1 decimal place
-    tft.print(" MHz");
-    //tft.print(freq);                                                     
-    tft.setTextColor(ST77XX_WHITE);                                 
-    tft.print(";");
-
-    tft.setCursor(85, 60);
-    tft.fillRect(85, 60, 100, 20, ST77XX_BLACK); // Clear previous value
-    tft.print(power, 1); // Display power with 1 decimal place
-    tft.print(" W");
-    set_freq(freq, 45);
-    delay(5000);
-    freq = freq + 10;
+  else
+  {
+    if (enc1.isRight()) 
+    {
+      power_counter += power_increment;
+      tft.setRotation(0);                                            
+      tft.setTextSize(2);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setCursor(90, 60);
+      tft.fillRect(80, 60, 40, 20, ST77XX_BLACK); 
+      if(counter < 10)
+      {
+        tft.print("error");
+      }
+      else
+      {
+        tft.print(power_counter);
+        power = power_counter;
+        tft.print(" ???");
+        set_freq(freq, power);
+      }
+    }
+   
+      else if (enc1.isLeft()) 
+      {
+        power_counter -= power_increment;
+        tft.setRotation(0);
+        tft.setTextSize(2);
+        tft.setTextColor(ST77XX_WHITE);
+        tft.setCursor(90, 60);
+        tft.fillRect(80, 60, 40, 20, ST77XX_BLACK); 
+        
+        if(power_counter < 0 || power_counter > 62 )
+        {
+          tft.print("error");
+        }
+        else
+        {
+          tft.print(power_counter);
+          power = power_counter;
+          tft.print(" ???");
+          set_freq(freq, power);
+        }
+      }
+  }
+    
+    
+   
   }
 
 
 
+//ramp_mode
+  // writeRegister(R112, 0x00);
+  // writeRegister(R111, 0x00);
+  // writeRegister(R110, 0x00);
+  // writeRegister(R106, 0x00);
+  // writeRegister(R105, 0x0020);
+  // writeRegister(R104, 0x346E);
+  // writeRegister(R103, 0xF972);
+  // writeRegister(R102, 0x3FFF);
+  // writeRegister(R101, 0x0010);
+  // writeRegister(R100, 0x346E);
+  // writeRegister(R99, 0x346E);
+  // writeRegister(R98, 0x0000);
+  // writeRegister(R97, 0x8880);
+  // writeRegister(R96, 0x0000);
+  // writeRegister(R86, 0xFFFF);
+  // writeRegister(R85, 0x0000);
+  // writeRegister(R84, 0x0000);
+  // writeRegister(R83, 0x0000);
+  // writeRegister(R82, 0x0000);
+  // writeRegister(R81, 0x0000);
+  // writeRegister(R80, 0x0000);
+  // writeRegister(R79, 0x0080);
+  // writeRegister(R0, 0b1010010000011100);
 
-    // set_freq(25, 50);
-    // delay(2000);        //просто тест      
-    // set_freq(35, 55);
-    // delay(2000);
-    // set_freq(68, 60);
-    // delay(2000);
-    // set_freq(99, 63);
-    // delay(2000);
+
   
-/*ramp_mode
 
-  writeRegister(R112, 0x00);
-  writeRegister(R111, 0x00);
-  writeRegister(R110, 0x00);
-  writeRegister(R106, 0x00);
-  writeRegister(R105, 0x0020);
-  writeRegister(R104, 0x346E);
-  writeRegister(R103, 0xF972);
-  writeRegister(R102, 0x3FFF);
-  writeRegister(R101, 0x0010);
-  writeRegister(R100, 0x346E);
-  writeRegister(R99, 0x346E);
-  writeRegister(R98, 0x0000);
-  writeRegister(R97, 0x8880);
-  writeRegister(R96, 0x0000);
-  writeRegister(R86, 0xFFFF);
-  writeRegister(R85, 0x0000);
-  writeRegister(R84, 0x0000);
-  writeRegister(R83, 0x0000);
-  writeRegister(R82, 0x0000);
-  writeRegister(R81, 0x0000);
-  writeRegister(R80, 0x0000);
-  writeRegister(R79, 0x0080);
 
-//добавить R0
-*/
-}
+
 
 
 
@@ -381,6 +481,11 @@ uint16_t dec_to_bin(uint16_t num)    //Функция для перевода, �
 }
 
 
+bool isInteger(float number) {
+  return number == (int)number;
+}
+
+
 void set_freq(uint16_t fout, uint16_t power)
 {
   int chdiv;
@@ -405,8 +510,6 @@ void set_freq(uint16_t fout, uint16_t power)
     writeRegister(R45, 0b1100100011011110);   //переключил выход A на VCO
     writeRegister(R27, 0b0000000000000010);   //включил VCO2X_EN    
   }
-
-
 
   else if(fout < 7500)//начало диапазона Channel Divider
   {
@@ -564,18 +667,28 @@ void set_freq(uint16_t fout, uint16_t power)
     }
   }
 
-  int PLL_N = (fout * chdiv) / 10;      
-  int PLL_NUM = fout % 10;
+  int PLL_N = ((fout * chdiv) / 10);   
+  int PLL_NUM;
+
+  if(isInteger(PLL_N) == 0)           //исплбзуется для проверки являеся ли PLL_num дробным или нет. Если целое то можно получить частоты без использования дроби
+  {
+
+      PLL_NUM = fractional(((fout * chdiv) / 10) + 9);
+  }                                   
+  else
+  {
+     PLL_NUM = 0;
+  }
+
+  
   
   writeRegister(R36, PLL_N);
   writeRegister(R43, PLL_NUM);
   writeRegister(R39, 10);
+  
   writeRegister(R44, replace_bits_8_to_13(0x1EA3, dec_to_bin(power)));
   writeRegister(R0, 0b0010010000011100);
 
-  
-
-  
 }
 
 uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) {
