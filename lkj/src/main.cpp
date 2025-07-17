@@ -95,6 +95,7 @@
  //Encoder enc1(CLK, DT, SW);
  Encoder enc1(CLK, DT, SW, TYPE2);
 
+ void set_generator();
  void testdrawtext(char *text, uint16_t color) ;          
  void writeRegister(uint8_t address, uint16_t data);                      //передача дынных в регистр 
  char spi_transfer(volatile uint8_t data);                                //настройка SPI
@@ -128,9 +129,10 @@ void setup()
     //settings_spi();
     
     tft.init(240, 320);
-    //tft.fillScreen((uint16_t)(-1));
-    tft.fillScreen(ST77XX_BLACK); // Clear screen with black background
+    
+    tft.fillScreen(ST77XX_BLACK); 
     tft.setRotation(0);   
+
     // Set text color and size
     tft.setTextColor(ST77XX_WHITE);
     tft.setTextSize(2);
@@ -151,62 +153,10 @@ void setup()
     enc1.setTickMode(TYPE2);
 
 
-    //выдвет 75 МГц                        
-    // Program RESET = 1 to reset registers
-    writeRegister(R0, 0b0010010000011110);
-    //Program RESET = 0 to remove reset
-    writeRegister(R0, 0b0010010000011100);
-
-    writeRegister(R78, 0x0003);
-    writeRegister(R75, 0x0B00);
-    writeRegister(R74, 0x0000);
-    writeRegister(R73, 0x003F);
-    writeRegister(R72, 0x0001);
-    writeRegister(R71, 0x0081);
-    writeRegister(R70, 0xC350);
-    writeRegister(R69, 0x0000);
-    writeRegister(R60, 0x0000);
-    writeRegister(R59, 0x0001);
-    writeRegister(R46, 0x07FC);
-    //writeRegister(R45, 0xC0DE);
-    //writeRegister(R45, 0b1101000011011110);   //No output power boost
-    writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
-    //writeRegister(R44, 0b0001010110100011); //OUTA_PWR =5
-    //writeRegister(R44, 0b0001010010100011); //OUTA_PWR =20
-    writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
-    writeRegister(R43, 0x0000);
-    writeRegister(R42, 0x0000);
-    writeRegister(R41, 0x0000);
-    writeRegister(R40, 0x0000);
-    writeRegister(R39, 0x000A);
-    writeRegister(R38, 0x0000);
-    writeRegister(R37, 0x0304);
-    writeRegister(R36, 960);                  //N dIVEDER
-    writeRegister(R34, 0x0000);
-    writeRegister(R31, 0x43EC);
-    writeRegister(R27, 0x0002);
-    writeRegister(R20, 0xE048);                                                            //пока что в комент, в дальнейшем нужно для настройки генератора.
-    writeRegister(R19, 0x27B7);
-    writeRegister(R17, 0x012C);
-    writeRegister(R16, 0x0080);        
-    writeRegister(R14, 0x1E70);
-    writeRegister(R12, 0x5002);
-    writeRegister(R11, 0x0018);
-    writeRegister(R10, 0x10D8);
-    writeRegister(R9,  0x1604);
-    writeRegister(R8,  0x2000);
-    writeRegister(R7,  0x40B2);
-    writeRegister(R1,  0x0808);
-    writeRegister(R0, 0b0010010000011100);
-            
+    set_generator;
 
 
-   
-
-    //  delay(200); 
-    //  set_freq(freq, power);
-
-
+  /*
     // //   ramp_mode
     // writeRegister(R112, 0x00);
     // writeRegister(R111, 0x00);
@@ -232,6 +182,8 @@ void setup()
     // writeRegister(R79, 0x0080);
   
     // writeRegister(R0, 0b1010010000011100);
+
+   */
 }
      
 
@@ -270,13 +222,35 @@ void loop()
 
   int increment = 1;
   int power_increment = 1;
+
+
+  if(enc1.isFastL())
+  {
+    tft.setTextSize(2);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setCursor(80, 20);
+      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
+      tft.print("fast_L");
+  }
+
+  
+  if(enc1.isFastR())
+  {
+    tft.setTextSize(2);
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setCursor(80, 20);
+      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
+      tft.print("fast_R");
+  }
+
+
+  /*       //выбор параметра при нажатии, изменение при повороте только на 1 
   if(click_counter % 2 == 1)
   {
  
-    
-    if (enc1.isRight()) 
+    if(enc1.isRight()) 
     {
-      counter += increment ;
+      counter += increment;
       ///tft.setRotation(0);                                            //фрагмент для энкодера
       tft.setTextSize(2);
       tft.setTextColor(ST77XX_WHITE);
@@ -327,10 +301,10 @@ void loop()
       tft.setTextColor(ST77XX_WHITE);
       tft.setCursor(90, 60);
       tft.fillRect(80, 60, 40, 20, ST77XX_BLACK); 
-      if(power_counter < 0 || power_counter > 30 )
+      if(power_counter < 0 || power_counter >= 30 )
       {
         tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-        power_counter = 31;
+        power_counter = 30;
         tft.print(power_counter);
       }
       else
@@ -352,10 +326,10 @@ void loop()
         tft.setCursor(90, 60);
         tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
         
-        if(power_counter > 31 )
+        if(power_counter > 30 )
         {
           tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-          power_counter = 31;
+          power_counter = 30;
           tft.print(power_counter);
         }
         else if(power_counter < 0 )
@@ -374,62 +348,105 @@ void loop()
         }
       }
   }
-    
+*/
   
 
 
+  /*попытка использовать ramp mod
 
+  // Program RESET = 1 to reset registers
+  writeRegister(R0, 0b0010010000011110);
 
-
-  //   //попытка использовать ramp mod
-
-  // // Program RESET = 1 to reset registers
-  // writeRegister(R0, 0b0010010000011110);
-
-  // //Program RESET = 0 to remove reset
-  // writeRegister(R0, 0b0010010000011100);
+  //Program RESET = 0 to remove reset
+  writeRegister(R0, 0b0010010000011100);
 
 
 
 
-  // writeRegister(R106, 0b0000000000000000);   // не знаю что такое  RAMP_SCALE_COUNT, пусть равен 0
+  writeRegister(R106, 0b0000000000000000);   // не знаю что такое  RAMP_SCALE_COUNT, пусть равен 0
 
-  // //1 ПОСТАВИЛ ПРОСТО ТАК, ЧТОБЫ БЫЛО КАКОЕТО ЧИСЛО, А НЕ 0 В  RAMP_DLY_CNT
-  // //Возможно вместо него нужно использовать R98, где есть RAMP0_DLY
-  // writeRegister(R105, 0b0000000000000000);    
+  //1 ПОСТАВИЛ ПРОСТО ТАК, ЧТОБЫ БЫЛО КАКОЕТО ЧИСЛО, А НЕ 0 В  RAMP_DLY_CNT
+  //Возможно вместо него нужно использовать R98, где есть RAMP0_DLY
+  writeRegister(R105, 0b0000000000000000);    
 
-  // writeRegister(R104, 0b0011010001101110);     // RAMP_LEN1 = 13422
-  // writeRegister(R100, 0b0011010001101110);     // RAMP_LEN0 = 13422
+  writeRegister(R104, 0b0011010001101110);     // RAMP_LEN1 = 13422
+  writeRegister(R100, 0b0011010001101110);     // RAMP_LEN0 = 13422
 
-  // writeRegister(R101, 0b0000000000010001);  //тут  не понятно что делать с  RAMP1_DLY(пока что 0)
+  writeRegister(R101, 0b0000000000010001);  //тут  не понятно что делать с  RAMP1_DLY(пока что 0)
 
-  // writeRegister(R103, 0b1111100101110010);  //RAMP1_INC = 1 073 740 146
-  // writeRegister(R102, 0b0011111111111111);  //RAMP1_INC = 1 073 740 146
+  writeRegister(R103, 0b1111100101110010);  //RAMP1_INC = 1 073 740 146
+  writeRegister(R102, 0b0011111111111111);  //RAMP1_INC = 1 073 740 146
 
-  // //Возможно нужно будет поменять местами, тк я не знаю с какого регистра начинается запись 
-  // writeRegister(R99, 0b1111100101110010);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
-  // writeRegister(R98, 0b1111111111111100);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
-
-
-  // writeRegister(R97, 0b1000100000000000);   //RAMP0_RST,RAMP_TRIGB, RAMP_TRIGA, RAMP_BURST_TRIG
-  // writeRegister(R96, 0b1000000000000000);   // не знаю что ставить в RAMP_BURST_EN, пока что 1 
+  //Возможно нужно будет поменять местами, тк я не знаю с какого регистра начинается запись 
+  writeRegister(R99, 0b1111100101110010);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
+  writeRegister(R98, 0b1111111111111100);     // RAMP0_INC = 1 073 740 146, как для RAMP1_INC, хотя в документации написано другое 
 
 
-
-  // writeRegister(R80, 0b0000000000000011);      //RAMP_THRESH, почему 11 бит отдельно?
-  // writeRegister(R79, 0b0000000010000000);      //RAMP_THRESH, нужно рахобраться какой регистр нужно заполнять первым 
-  // writeRegister(R78, 0b0000000000000000);      //RAMP_THRESH
-
-  // writeRegister(R0, 0b1010010000011100);      //Enable frequency ramping mode
+  writeRegister(R97, 0b1000100000000000);   //RAMP0_RST,RAMP_TRIGB, RAMP_TRIGA, RAMP_BURST_TRIG
+  writeRegister(R96, 0b1000000000000000);   // не знаю что ставить в RAMP_BURST_EN, пока что 1 
 
 
 
-   
+  writeRegister(R80, 0b0000000000000011);      //RAMP_THRESH, почему 11 бит отдельно?
+  writeRegister(R79, 0b0000000010000000);      //RAMP_THRESH, нужно рахобраться какой регистр нужно заполнять первым 
+  writeRegister(R78, 0b0000000000000000);      //RAMP_THRESH
+
+  writeRegister(R0, 0b1010010000011100);      //Enable frequency ramping mode
+*/
+
 }
 
 
 
+void set_generator()
+{
+  //выдвет 75 МГц                        
+    // Program RESET = 1 to reset registers
+    writeRegister(R0, 0b0010010000011110);
+    //Program RESET = 0 to remove reset
+    writeRegister(R0, 0b0010010000011100);
 
+    writeRegister(R78, 0x0003);
+    writeRegister(R75, 0x0B00);
+    writeRegister(R74, 0x0000);
+    writeRegister(R73, 0x003F);
+    writeRegister(R72, 0x0001);
+    writeRegister(R71, 0x0081);
+    writeRegister(R70, 0xC350);
+    writeRegister(R69, 0x0000);
+    writeRegister(R60, 0x0000);
+    writeRegister(R59, 0x0001);
+    writeRegister(R46, 0x07FC);
+
+    //writeRegister(R45, 0b1101000011011110);   //No output power boost
+    writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
+    writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
+    writeRegister(R43, 0x0000);
+    writeRegister(R42, 0x0000);
+    writeRegister(R41, 0x0000);
+    writeRegister(R40, 0x0000);
+    writeRegister(R39, 0x000A);
+    writeRegister(R38, 0x0000);
+    writeRegister(R37, 0x0304);
+    writeRegister(R36, 960);                  //N dIVEDER
+    writeRegister(R34, 0x0000);
+    writeRegister(R31, 0x43EC);
+    writeRegister(R27, 0x0002);
+    writeRegister(R20, 0xE048);                                                            //пока что в комент, в дальнейшем нужно для настройки генератора.
+    writeRegister(R19, 0x27B7);
+    writeRegister(R17, 0x012C);
+    writeRegister(R16, 0x0080);        
+    writeRegister(R14, 0x1E70);
+    writeRegister(R12, 0x5002);
+    writeRegister(R11, 0x0018);
+    writeRegister(R10, 0x10D8);
+    writeRegister(R9,  0x1604);
+    writeRegister(R8,  0x2000);
+    writeRegister(R7,  0x40B2);
+    writeRegister(R1,  0x0808);
+    writeRegister(R0, 0b0010010000011100);
+            
+}
 
 void testdrawtext(char *text, uint16_t color) 
 { 
@@ -538,6 +555,7 @@ void set_freq(uint16_t fout, uint16_t power)
   {
     //ошибка, больше 20 Ghz нельзя 
   }
+
   else if(fout < 20000 && fout >15000)   //VCO doubler
   {
     //VCO doubler
@@ -602,7 +620,8 @@ void set_freq(uint16_t fout, uint16_t power)
   else if(fout < 7500)//начало диапазона Channel Divider
   {
     writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
-    writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
+    //writeRegister(R45, 0b11000 00 011011110);   //переключил выход A на Channel Divider, power boost- max
+    writeRegister(R45, 0b1100011011011110); 
     writeRegister(R31, 0b0100001111101100);   //включил CHDIV
     
   
