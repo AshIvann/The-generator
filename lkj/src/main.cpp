@@ -85,16 +85,11 @@
  #define R111 0x6F
  #define R112 0x70
  
-
-
- 
-
  Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
  Encoder enc1(CLK, DT, SW, TYPE2);
 
  void set_generator();                                                    //устанавливает значения необходимых для работы регистров 
- void turning_speed();                                                     //используется для более удобного использования энкодера. При быстром повороте  значение на которое увеличивается величина растет.
- void testdrawtext(char *text, uint16_t color) ;          
+ void turning_speed();                                                    //используется для более удобного использования энкодера. При быстром повороте  значение на которое увеличивается величина растет.          
  void writeRegister(uint8_t address, uint16_t data);                      //передача дынных в регистр 
  char spi_transfer(volatile uint8_t data);                                //настройка SPI
  void settings_spi();                                                     //настройка SPI
@@ -137,7 +132,7 @@ void setup()
   tft.setCursor(10, 20);
   tft.print("Freq: ");
   tft.print(freq);
-  tft.fillRect(8, 40, 160, 2, ST77XX_BLUE);
+  tft.fillRect(8, 40, 190, 2, ST77XX_BLUE);
   tft.print(" MHz");
   tft.setCursor(10, 60);
   tft.print("Power: ");
@@ -146,10 +141,11 @@ void setup()
 
   Serial.begin(9600);
   enc1.setTickMode(TYPE2);
+
   set_generator();
 
-  /*
-    // //   ramp_mode
+  
+    /* //   ramp_mode
     // writeRegister(R112, 0x00);
     // writeRegister(R111, 0x00);
     // writeRegister(R110, 0x00);
@@ -177,40 +173,38 @@ void setup()
 
    */
 }
-     
-uint16_t cnt = 10;
-uint16_t cnt_x = 0;
-int x= 0;
-int y = 0;
 
-long increase_value = 0;
-int power_increment = 1;
+int increase_value = 0;  //переменная отвечающая за изменение значения частоты 
+int power_increment = 1;  //переменная отвечающая за изменение значения мощности 
+
 
 void loop()
 {
   enc1.tick();
-   
+  
+  
+
   if(enc1.isClick())
   { 
     click_counter = click_counter + 1;
     if(click_counter % 2 == 1)
     {
       tft.setCursor(10, 20);
-      tft.fillRect(8, 40, 160, 2, ST77XX_BLUE);
+      tft.fillRect(8, 40, 190, 2, ST77XX_BLUE);
       tft.setTextColor(ST77XX_WHITE);
       tft.setTextSize(2);
       tft.print("Freq: ");
-      tft.fillRect(8, 80, 160, 2, ST77XX_BLACK);
+      tft.fillRect(8, 80, 190, 2, ST77XX_BLACK);
     }
 
     else
     {
       tft.setCursor(10, 60);
-      tft.fillRect(8, 80, 160, 2, ST77XX_BLUE);
+      tft.fillRect(8, 80, 190, 2, ST77XX_BLUE);
       tft.setTextColor(ST77XX_WHITE);
       tft.setTextSize(2);
       tft.print("Power: ");
-      tft.fillRect(8, 40, 160, 2, ST77XX_BLACK);
+      tft.fillRect(8, 40, 190, 2, ST77XX_BLACK);
     }
   }
 
@@ -319,151 +313,7 @@ void loop()
   }
    
 }
-/*
-  
-  
-    if(enc1.isRight())          //увеличение на 1
-    {
-      counter += increment;
-      tft.setTextSize(2);
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(80, 20);
-      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
-      if(counter < 10)
-      {
-        tft.print("error");
-      }
-      else
-      {
-        tft.print(counter);
-        freq = counter;
-        tft.print(" MHz");
-        set_freq(freq, power);
-      }
-    }
 
-    else if(enc1.isFastR())     //увеличение на 100 при быстром повороте 
-    {
-      counter += increment * 25;
-      ///tft.setRotation(0);                                            //фрагмент для энкодера
-      tft.setTextSize(2);
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(80, 20);
-      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
-      if(counter < 10)
-      {
-        tft.print("error");
-      }
-      else
-      {
-        tft.print(counter);
-        freq = counter;
-        tft.print(" MHz");
-        set_freq(freq, power);
-      }
-    }
-   
-    else if (enc1.isLeft())     //уменьшение на 1 
-     {
-       counter -= increment ;
-       //tft.setRotation(0);
-       tft.setTextSize(2);
-       tft.setTextColor(ST77XX_WHITE);
-       tft.setCursor(80, 20);
-       tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
-        if(counter< 10)
-        {
-          tft.print("error");
-        }
-        else
-        {
-          tft.print(counter);
-          freq = counter;
-          tft.print(" MHz");
-          set_freq(freq, power);
-        }
-      }
-
-    else if(enc1.isFastL())     //уменьшении на 50 при быстром повороте
-    {
-      counter -= increment * 25;
-      tft.setTextSize(2);
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(80, 20);
-      tft.fillRect(80, 20, 100, 20, ST77XX_BLACK); 
-      if(counter< 10)
-      {
-        tft.print("error");
-      }
-      else
-      {
-        tft.print(counter);
-        freq = counter;
-        tft.print(" MHz");
-        set_freq(freq, power);
-      }
-    }
-
-  } 
-
-  else  //изменение мощности 
-  {
-    if (enc1.isRight())       //увеличение на 1
-    {
-      power_counter += power_increment;
-      //tft.setRotation(0);                                            
-      tft.setTextSize(2);
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(90, 60);
-      tft.fillRect(80, 60, 40, 20, ST77XX_BLACK); 
-      if(power_counter < 0 || power_counter >= 30 )
-      {
-        tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-        power_counter = 30;
-        tft.print(power_counter);
-      }
-      else
-      {
-        tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-        tft.print(power_counter);
-        power = power_counter;
-        tft.print(" ???");
-        set_freq(freq, power);
-      }
-    }
-   
-    else if (enc1.isLeft())   //уменьшение на 1
-    {
-      power_counter -= power_increment;
-      tft.setTextSize(2);
-      tft.setTextColor(ST77XX_WHITE);
-      tft.setCursor(90, 60);
-      tft.fillRect(80, 60, 100, 20, ST77XX_BLACK);   
-      if(power_counter > 30 )
-      {
-        tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-        power_counter = 30;
-        tft.print(power_counter);
-      }
-        else if(power_counter < 0 )
-        {
-          tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-          power_counter = 0;
-          tft.print(power_counter);
-        }
-        else
-        {
-          tft.fillRect(80, 60, 100, 20, ST77XX_BLACK); 
-          tft.print(power_counter);
-          power = power_counter;
-          tft.print(" ???");
-          set_freq(freq, power);
-        }
-      }
-  }
-
-*/
- 
 /*попытка использовать ramp mod
 
   // Program RESET = 1 to reset registers
@@ -505,8 +355,6 @@ void loop()
 
   writeRegister(R0, 0b1010010000011100);      //Enable frequency ramping mode
 */
-
-
 
 void set_generator()
 {
@@ -565,7 +413,7 @@ void turning_speed()
   if(time_diff < 150)
   {
     increase_value += increase_value + 1;
-    tft.setTextColor(ST77XX_RED);
+    tft.setTextColor(ST77XX_RED);                           //вывод значения increase_value, по сути не нужно, убрать
     if(increase_value >= 2047)
     {
       increase_value = 2047;
@@ -574,20 +422,12 @@ void turning_speed()
   else
   {
     increase_value = 1;
-    tft.setTextColor(ST77XX_BLUE);
+    tft.setTextColor(ST77XX_BLUE);                          //вывод значения increase_value, по сути не нужно, убрать
   }
   time1 = time2;
   tft.setCursor(20, 120);
   tft.fillRect(20, 120, 150, 40, ST77XX_BLACK);
   tft.print(increase_value);
-}
-
-void testdrawtext(char *text, uint16_t color) 
-{ 
-  tft.setCursor(0, 0);
-  tft.setTextColor(color);
-  tft.setTextWrap(true);
-  tft.print(text);
 }
 
 char spi_transfer(volatile uint8_t data)
@@ -903,7 +743,7 @@ void set_freq(uint16_t fout, uint16_t power)
     }
   }
 
-  float PLL_N = ((fout * chdiv) / 10);   
+  float PLL_N = (((float)fout * (float)chdiv) / 10);   
   int PLL_NUM;
            
  
@@ -916,7 +756,6 @@ void set_freq(uint16_t fout, uint16_t power)
     PLL_NUM = 0;
   }
 
- 
   writeRegister(R36, trunc(PLL_N));         //trunc(функция из math.h) использую для удаления дробной части, можно заменить на (int)PLL_N, но я сделал так
   writeRegister(R43, PLL_NUM);
   writeRegister(R42, 0);
@@ -943,7 +782,7 @@ uint8_t fractional(float number)          //отделяет цифру посл
 {
   
     int integer_part = (int)floor(number); // Целая часть
-    float fractional_part = number - integer_part; // Дробная часть
+    float fractional_part = number - integer_part + 0.01; // Дробная часть
     int fractional_digits = (int)(fractional_part * 10); // Умножаем на 100, чтобы получить 1
     return fractional_digits;
 }
