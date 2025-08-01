@@ -105,6 +105,7 @@ byte clr;
 uint8_t address=0;
  
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
+unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
 
 int counter = 75;
 int power_counter = 10;
@@ -193,8 +194,9 @@ void setup()
 
 uint32_t increase_value = 1;     //переменная отвечающая за изменение значения частоты 
 int power_increment = 1;    //переменная отвечающая за изменение значения мощности 
+int position = 8;
 
-uint64_t number = 433990001;            //выбор частоты для second_freq
+uint64_t number = 180861001;            //выбор частоты для second_freq
 
 uint32_t last_six = number % 1000000;
 uint32_t first_five = number / 1000000;
@@ -207,12 +209,23 @@ void loop()
   // tft.setCursor(0,45);
   // int n = divider_values[2];
   // tft.print(n);
-  
+ 
+if(enc1.isClick())
+{
+  increase_value *= 10;
+  position--;
+  if(increase_value >= 1000000000)
+  {
+    position = 8;
+    increase_value = 1;
+  }
+tft.fillRect(0, 23, 320, 3, ST77XX_BLACK);
+tft.fillRect(position * 20, 23, 20, 3, ST77XX_BLUE);
+}  
+
 if(enc1.isRight())
   {
-    turning_speed();
-
-
+    //turning_speed();
     last_six = number % 1000000;
     first_five = number / 1000000;
     tft.setCursor(0,0);
@@ -227,9 +240,10 @@ if(enc1.isRight())
     tft.setCursor(0,30);
     second_set_freq(number);
   }
-  if(enc1.isLeft())
+
+if(enc1.isLeft())
   {
-    turning_speed();
+    //turning_speed();
     last_six = number % 1000000;
     first_five = number / 1000000;
     tft.setCursor(0,0);
@@ -375,8 +389,10 @@ if(enc1.isRight())
 */
 }
 
-int chdiv = 0;
+int chdiv;
 int N;
+int chdiv_reg;
+
 void second_set_freq(uint64_t fout)
 {
 
@@ -514,13 +530,16 @@ else
     writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
     writeRegister(R31, 0b0100001111101100);   //включил CHDIV
 
-    chdiv = find_chdiv(fout);
+    chdiv = divider_values[find_chdiv(fout)];
+    chdiv_reg = reg_divider[find_chdiv(fout)];
+    
 
-    uint32_t pll_den = 10000000;                              //не изменяется.    Нужно внестив регистр!!!!!!!!!!!!!!!!!!!!
-    float NUM = (last_six * chdiv) / pll_den;
-    uint16_t pll_n = (first_five * chdiv) / 10 + (int) NUM;   //10 это частота фазового детектора
+    uint32_t pll_den = 10000000;                              
+    int NUM = (last_six * chdiv) / pll_den;
+    uint16_t pll_n = (first_five * chdiv) / 10 + NUM;   //10 это частота фазового детектора
 
-    long int num_fractional_part = (last_six * chdiv) - (int) NUM * 1e7;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
+
+    long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
 
     // tft.setCursor(0,30);
     // tft.setTextColor(ST77XX_YELLOW);  
@@ -528,12 +547,17 @@ else
     // tft.print("pll_n = ");
     // tft.print(pll_n);
 
-    // tft.setCursor(0,51);
+    // tft.setCursor(0,55);
     // tft.fillRect(0, 51, 320, 21, ST77XX_BLACK);
     // tft.print("PLL_NUM=");
     // tft.print(num_fractional_part);
 
-    writeRegister(R75, 0b0000100110000000);   //chdiv  = 24
+    // tft.setCursor(0,80);
+    // tft.fillRect(0, 80, 320, 21, ST77XX_BLACK);
+    // tft.print("chdiv=");
+    // tft.print(chdiv);
+
+    writeRegister(R75, chdiv_reg);   
 
     writeRegister(R36, pll_n);
     writeRegister(R43, low_16bit(num_fractional_part));
@@ -603,7 +627,7 @@ void turning_speed()
   // if(time_diff < 400)                          //потом вернуть к 150
   // {
     //increase_value += increase_value + 1;
-    increase_value = increase_value;
+   // increase_value;
     tft.setTextColor(ST77XX_RED);                           //вывод значения increase_value, по сути не нужно, убрать
   //   if(increase_value >= 100000000)
   //   {
@@ -957,6 +981,7 @@ uint16_t replace_bits_6_to_10(uint16_t original, uint8_t new_bits)
   uint16_t shifted_bits = (uint16_t)new_bits << 5;
   // Очищаем биты 8-13 и вставляем новые
   uint16_t final = (original & mask) | shifted_bits;
+  return final;
 }
 
 uint8_t fractional(float number)          //отделяет цифру после запятой
@@ -975,8 +1000,9 @@ int find_chdiv(uint64_t fout)
     uint64_t left = 7500 * 1e6 / divider_values[N];
     if(fout >= left) 
     {
-      chdiv = divider_values[N];
-      return divider_values[N];
+      //chdiv = divider_values[N];
+      //return divider_values[N];
+      return N;
     }
   }
 }
