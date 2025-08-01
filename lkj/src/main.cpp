@@ -15,91 +15,91 @@
 #define DT 3
 #define SW 4
 
- //Фрагмент из кода для SPI используются для передачи данных на LMX2595
- #define DATAOUT 11//MOSI     
- #define DATAIN  12//MISO     
- #define SPICLOCK  13//sck    
- #define CHIPSELECT 10//ss    
+//Фрагмент из кода для SPI используются для передачи данных на LMX2595
+#define DATAOUT 11//MOSI     
+#define DATAIN  12//MISO     
+#define SPICLOCK  13//sck    
+#define CHIPSELECT 10//ss    
  
 
- #define R0 0x00
- #define R1 0x01
- #define R7 0x07
- #define R8 0x08
- #define R9 0x09
- #define R10 0x0A
- #define R11 0x0B
- #define R12 0x0C
- #define R14 0x0E
- #define R16 0x10
- #define R17 0x11
- #define R19 0x13
- #define R20 0x14
- #define R27 0x1B
- #define R31 0x1F
- #define R34 0x22
- #define R36 0x24
- #define R37 0x25
- #define R38 0x26
- #define R39 0x27
- #define R40 0x28
- #define R41 0x29
- #define R42 0x2A
- #define R43 0x2B
- #define R44 0x2C 
- #define R45 0x2D
- #define R46 0x2E
- #define R59 0x3B
- #define R60 0x3C
- #define R69 0x45
- #define R70 0x46
- #define R71 0x47
- #define R72 0x48
- #define R73 0x49
- #define R74 0x4A
- #define R75 0x4B
- #define R78 0x4E
- #define R79 0x4F
- #define R80 0x50
- #define R81 0x51
- #define R82 0x52
- #define R83 0x53
- #define R84 0x54
- #define R85 0x55
- #define R86 0x56
- #define R96 0x60
- #define R97 0x61
- #define R98 0x62
- #define R99 0x63
- #define R100 0x64
- #define R101 0x65
- #define R102 0x66
- #define R103 0x67
- #define R104 0x68
- #define R105 0x69
- #define R106 0x6A
- #define R110 0x6E
- #define R111 0x6F
- #define R112 0x70
+#define R0 0x00
+#define R1 0x01
+#define R7 0x07
+#define R8 0x08
+#define R9 0x09
+#define R10 0x0A
+#define R11 0x0B
+#define R12 0x0C
+#define R14 0x0E
+#define R16 0x10
+#define R17 0x11
+#define R19 0x13
+#define R20 0x14
+#define R27 0x1B
+#define R31 0x1F
+#define R34 0x22
+#define R36 0x24
+#define R37 0x25
+#define R38 0x26
+#define R39 0x27
+#define R40 0x28
+#define R41 0x29
+#define R42 0x2A
+#define R43 0x2B
+#define R44 0x2C 
+#define R45 0x2D
+#define R46 0x2E
+#define R59 0x3B
+#define R60 0x3C
+#define R69 0x45
+#define R70 0x46
+#define R71 0x47
+#define R72 0x48
+#define R73 0x49
+#define R74 0x4A
+#define R75 0x4B
+#define R78 0x4E
+#define R79 0x4F
+#define R80 0x50
+#define R81 0x51
+#define R82 0x52
+#define R83 0x53
+#define R84 0x54
+#define R85 0x55
+#define R86 0x56
+#define R96 0x60
+#define R97 0x61
+#define R98 0x62
+#define R99 0x63
+#define R100 0x64
+#define R101 0x65
+#define R102 0x66
+#define R103 0x67
+#define R104 0x68
+#define R105 0x69
+#define R106 0x6A
+#define R110 0x6E
+#define R111 0x6F
+#define R112 0x70
  
- Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
- Encoder enc1(CLK, DT, SW, TYPE2);
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+Encoder enc1(CLK, DT, SW, TYPE2);
 
-void set_generator();                                                    //устанавливает значения необходимых для работы регистров 
-void turning_speed();                                                    //используется для более удобного использования энкодера. При быстром повороте  значение на которое увеличивается величина растет.          
-void writeRegister(uint8_t address, uint16_t data);                      //передача дынных в регистр 
-char spi_transfer(volatile uint8_t data);                                //настройка SPI
-void settings_spi();                                                     //настройка SPI
-byte send_SPI_byte(uint8_t val1);                                        //передача байта по SPI
-uint16_t dec_to_bin(uint16_t num);
-void set_freq(uint16_t fout, uint16_t power);                            //установка частоты 
-uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits);      //перемещение 6 битов на место 8-13(используется для установки мощности), original изначальный адресс, в котором изменяется 8-13 байт, new_bits биты которые ставятся в 8-13 биты 
-uint8_t fractional(float number);                                        //отделяет цифры после запятой, возможно пригодится 
-bool isInteger(float number);                                            //проверяет является ли число дробным или нет. Елс целое то возвращает 1, если нет то 0
-void second_set_freq(uint64_t fout);
-int find_chdiv(uint64_t fout);
-uint16_t low_16bit(uint32_t);
-uint16_t high_16bit(uint32_t);
+void set_generator();                                                     //устанавливает значения необходимых для работы регистров 
+void turning_speed();                                                     //используется для более удобного использования энкодера. При быстром повороте  значение на которое увеличивается величина растет.          
+void writeRegister(uint8_t address, uint16_t data);                       //передача дынных в регистр 
+char spi_transfer(volatile uint8_t data);                                 //настройка SPI
+void settings_spi();                                                      //настройка SPI
+byte send_SPI_byte(uint8_t val1);                                         //передача байта по SPI
+uint16_t dec_to_bin(uint16_t num);        //вероятно неработает   
+void set_freq(uint16_t fout, uint16_t power);                             //установка частоты до гигагерца 
+uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits);       //перемещение 6 битов на место 8-13(используется для установки мощности), original изначальный адресс, в котором изменяется 8-13 байт, new_bits биты которые ставятся в 8-13 биты 
+uint8_t fractional(float number);                                         //отделяет цифры после запятой
+bool isInteger(float number);                                             //проверяет является ли число дробным или нет. Елс целое то возвращает 1, если нет то 0
+void second_set_freq(uint64_t fout);                                      //установка частоты до герца 
+int find_chdiv(uint64_t fout);                                            //определение значения делителя
+uint16_t low_16bit(uint32_t);                                             //выделяет младшие 16 бит из 32 битной переменной
+uint16_t high_16bit(uint32_t);                                            //выделяет старшие 16 бит из 32 битной переменной 
 
 byte clr;
 uint8_t address=0;
@@ -111,13 +111,20 @@ int counter = 75;
 int power_counter = 10;
 int click_counter = 1;
 
-int time1 = 0;
-int time2;
-int time_diff;
+int time1 = 0;              //используется в функции turning_speed 
+int time2;                  //используется в функции turning_speed 
+int time_diff;              //используется в функции turning_speed 
 
 uint16_t freq = 75;          //частота которая вызывается в setup
 uint16_t power = 10;         //мощность которая вызывается в setup
 
+uint32_t increase_value = 1;     //переменная отвечающая за изменение значения частоты 
+int power_increment = 1;         //переменная отвечающая за изменение значения мощности 
+int position = 8;                
+
+uint64_t number = 107972001;            //выбор частоты для second_freq
+uint32_t last_six = number % 1000000;
+uint32_t first_five = number / 1000000;
 
 void testtriangles() {
   tft.fillScreen(ST77XX_BLACK);
@@ -171,7 +178,6 @@ void setup()
 
   /*убрал на время // Display static labels
   
-  
   tft.setCursor(10, 30);
   tft.print("Freq: ");                                              
   tft.setCursor(110, 30);
@@ -188,79 +194,70 @@ void setup()
   Serial.begin(9600);
   enc1.setTickMode(TYPE2);
 
-  set_generator();
+  set_generator();                                          //изменить частоту с 75 МГц на другую
+  tft.fillRect(165 , 31, 20, 3, ST77XX_BLUE);
 
+  last_six = number % 1000000;
+  first_five = number / 1000000;
+  tft.setCursor(8,8);
+  number += increase_value;
+  tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+  tft.print(first_five);
+  tft.print(".");
+  tft.print(last_six);
+  tft.print("MHz");
 }
-
-uint32_t increase_value = 1;     //переменная отвечающая за изменение значения частоты 
-int power_increment = 1;    //переменная отвечающая за изменение значения мощности 
-int position = 8;
-
-uint64_t number = 180861001;            //выбор частоты для second_freq
-
-uint32_t last_six = number % 1000000;
-uint32_t first_five = number / 1000000;
 
 void loop()
 {
   enc1.tick(); 
-
-  // tft.fillRect(0, 45, 320, 21, ST77XX_BLACK);
-  // tft.setCursor(0,45);
-  // int n = divider_values[2];
-  // tft.print(n);
- 
-if(enc1.isClick())
-{
-  increase_value *= 10;
-  position--;
-  if(increase_value >= 1000000000)
+  
+  if(enc1.isClick())
   {
-    position = 8;
-    increase_value = 1;
-  }
-tft.fillRect(0, 23, 320, 3, ST77XX_BLACK);
-tft.fillRect(position * 20, 23, 20, 3, ST77XX_BLUE);
-}  
+    increase_value *= 10;
+    position--;
+    if(increase_value >= 1000000000)
+    {
+      position = 8;
+      increase_value = 1;
+    }
+    tft.fillRect(0, 31, 320, 3, ST77XX_BLACK);
+    tft.fillRect(position * 22, 31, 20, 3, ST77XX_BLUE);
+  }    
 
-if(enc1.isRight())
+  if(enc1.isRight())
   {
     //turning_speed();
     last_six = number % 1000000;
     first_five = number / 1000000;
-    tft.setCursor(0,0);
+    tft.setCursor(8,8);
     number += increase_value;
-    tft.fillRect(0, 0, 320, 21, ST77XX_BLACK);
+    tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
     tft.print(first_five);
     tft.print(".");
     tft.print(last_six);
     tft.print("MHz");
-
-    tft.fillRect(0, 30, 320, 21, ST77XX_BLACK);
-    tft.setCursor(0,30);
+    
     second_set_freq(number);
   }
 
-if(enc1.isLeft())
+  if(enc1.isLeft())
   {
     //turning_speed();
     last_six = number % 1000000;
     first_five = number / 1000000;
-    tft.setCursor(0,0);
+    tft.setCursor(8,8);
     number -= increase_value;
-    tft.fillRect(0, 0, 320, 21, ST77XX_BLACK);
+    tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
     tft.print(first_five);
     tft.print(".");
     tft.print(last_six);
     tft.print("MHz");
 
-    tft.fillRect(0, 30, 320, 21, ST77XX_BLACK);
-    tft.setCursor(0,30);
     second_set_freq(number);
   } 
-
-  
-/*
+ 
+/*старое управление частотой и мощностью
   if(enc1.isClick())
   { 
     click_counter = click_counter + 1;
@@ -389,9 +386,8 @@ if(enc1.isLeft())
 */
 }
 
-int chdiv;
-int N;
-int chdiv_reg;
+int chdiv;        //используется для получения значения делителя из массива divider_values[]
+int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
 
 void second_set_freq(uint64_t fout)
 {
@@ -418,113 +414,7 @@ void second_set_freq(uint64_t fout)
     writeRegister(R27, 0b0000000000000010);   //включил VCO2X_EN    
   }
 
-/*
-// else if(fout < 7500000000)//начало диапазона Channel Divider
-//   {
-//     // writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
-//     // writeRegister(R45, 0b1100011011011110); 
-//     // writeRegister(R31, 0b0100001111101100);   //включил CHDIV
-   
-//     if(fout < 7500000000 && fout >= 3750000000)
-//     {
-//      // writeRegister(R45, 0b1100000011011110);   //переключил выход на Channel Divider
-//       writeRegister(R31, 0b0000001111101100);   //выключил CHDIV, при 2 можно выключить, при остальных всегда включен
-//       writeRegister(R75, 0b0000100000000000);   //chdiv  = 2
-//       chdiv = 2;
-//     }
- 
-//     else if(fout < 3750000000 && fout >= 1875000000)
-//     {
-//       // writeRegister(R45, 0b1100000011011110);   //переключил выход на Channel Divider
-//       // writeRegister(R31, 0b0100001111101100);   //включил CHDIV
-//       //writeRegister(R75, 0b0000100001000000);   //chdiv  = 4
-//       chdiv = 4;
-//     }
- 
-//     else if(fout < 1875000000 && fout >= 1250000000)
-//     {
-//       chdiv = 6;
-//     }
-
-//       else if(fout < 1250000000 && fout >= 937500000)
-//     {
-//       chdiv = 8;
-//     }
-
-//     else if(fout < 937500000 && fout >= 625000000)
-//     {
-//       chdiv = 12;
-//     }
-
-//     else if(fout < 625000000 && fout >= 468750000)
-//     {
-//       chdiv = 16;
-//     }
-
-//     else if(fout < 468750000 && fout >= 312500000)
-//     {
-//       chdiv = 24;
-//     }
-
-//     else if(fout < 312500000 && fout >= 234375000)
-//     {
-//       chdiv = 32;
-//     }
-
-//     else if(fout < 234375000 && fout >= 156250000)
-//     {
-//       chdiv = 48;
-//     }
-
-//     else if(fout < 156250000 && fout >= 117187500)
-//     {
-//       chdiv = 64;
-//     }
-
-//     else if(fout < 117187500 && fout >= 104167000)
-//     {
-//       chdiv = 72;
-//     }
-
-//     else if(fout < 104167000 && fout >= 78125000)
-//     {
-//       chdiv = 96;
-//     }
-
-//     else if(fout < 78125000 && fout >= 58594000)
-//     {
-//       chdiv = 128;
-//     }
-
-//     else if(fout < 58594000 && fout >= 39062500)
-//     {
-//       chdiv = 192;
-//     }
-
-//     else if(fout < 39062500 && fout >= 29297000)
-//     {
-//       chdiv = 256;
-//     }
-
-//     else if(fout < 29297000 && fout >= 19531000)
-//     {
-//       chdiv = 384;
-//     }
-
-//     else if(fout < 19531000 && fout >= 14648000)
-//     {
-//       chdiv = 512;
-//     }
-
-//     else if(fout < 14648000 && fout >= 9766000)
-//     {
-//       chdiv = 768;
-//     }
-
-//   }
-//   return chdiv;
-*/
-else
+else        //<7500
   {
     writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
     writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
@@ -532,7 +422,6 @@ else
 
     chdiv = divider_values[find_chdiv(fout)];
     chdiv_reg = reg_divider[find_chdiv(fout)];
-    
 
     uint32_t pll_den = 10000000;                              
     int NUM = (last_six * chdiv) / pll_den;
@@ -541,29 +430,27 @@ else
 
     long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
 
-    // tft.setCursor(0,30);
-    // tft.setTextColor(ST77XX_YELLOW);  
-    // tft.fillRect(0, 30, 320, 21, ST77XX_BLACK);
-    // tft.print("pll_n = ");
-    // tft.print(pll_n);
+    tft.setCursor(0,38);
+    tft.setTextColor(ST77XX_YELLOW);  
+    tft.fillRect(0, 38, 320, 21, ST77XX_BLACK);
+    tft.print("pll_n = ");
+    tft.print(pll_n);
 
-    // tft.setCursor(0,55);
-    // tft.fillRect(0, 51, 320, 21, ST77XX_BLACK);
-    // tft.print("PLL_NUM=");
-    // tft.print(num_fractional_part);
+    tft.setCursor(0,63);
+    tft.fillRect(0, 63, 320, 21, ST77XX_BLACK);
+    tft.print("PLL_NUM=");
+    tft.print(num_fractional_part);
 
-    // tft.setCursor(0,80);
-    // tft.fillRect(0, 80, 320, 21, ST77XX_BLACK);
-    // tft.print("chdiv=");
-    // tft.print(chdiv);
+    tft.setCursor(0,88);
+    tft.fillRect(0, 88, 320, 21, ST77XX_BLACK);
+    tft.print("chdiv=");
+    tft.print(chdiv);
 
     writeRegister(R75, chdiv_reg);   
 
     writeRegister(R36, pll_n);
     writeRegister(R43, low_16bit(num_fractional_part));
     writeRegister(R42, high_16bit(num_fractional_part));
-
-
 
     writeRegister(R0, 0b0010010000011100);
 
@@ -622,27 +509,27 @@ void set_generator()
 
 void turning_speed()
 {
-  // time2 = millis();
-  // time_diff = time2 - time1;
-  // if(time_diff < 400)                          //потом вернуть к 150
-  // {
-    //increase_value += increase_value + 1;
-   // increase_value;
+  time2 = millis();
+  time_diff = time2 - time1;
+  if(time_diff < 400)                          //потом вернуть к 150
+  {
+    increase_value += increase_value + 1;
+   increase_value;
     tft.setTextColor(ST77XX_RED);                           //вывод значения increase_value, по сути не нужно, убрать
-  //   if(increase_value >= 100000000)
-  //   {
-  //     increase_value = 100000000;
-  //   }
-  // }
-  // else
-  // {
-  //   increase_value = 1;
-  //   tft.setTextColor(ST77XX_BLUE);                          //вывод значения increase_value, по сути не нужно, убрать
-  // }
-  // time1 = time2;
-  //tft.setCursor(20, 120);
-  //tft.fillRect(20, 120, 150, 40, ST77XX_BLACK);
-  //tft.print(increase_value);
+    if(increase_value >= 100000000)
+    {
+      increase_value = 100000000;
+    }
+  }
+  else
+  {
+    increase_value = 1;
+    tft.setTextColor(ST77XX_BLUE);                          //вывод значения increase_value, по сути не нужно, убрать
+  }
+  time1 = time2;
+  tft.setCursor(20, 120);
+  tft.fillRect(20, 120, 150, 40, ST77XX_BLACK);
+  tft.print(increase_value);
 }
 
 char spi_transfer(volatile uint8_t data)
@@ -943,7 +830,7 @@ void set_freq(uint16_t fout, uint16_t power)
 
 }
 
-uint16_t dec_to_bin(uint16_t num)    //Функция для перевода, но она не нужно, но пусть будет 
+uint16_t dec_to_bin(uint16_t num)         //Функция для перевода, но она не нужно, но пусть будет 
 {
     uint32_t bin = 0;
     //uint32_t k = 1;
@@ -995,25 +882,26 @@ uint8_t fractional(float number)          //отделяет цифру посл
 
 int find_chdiv(uint64_t fout)
 {
-  for(N = 0; N <= 17; N++)
+  for(int N = 0; N <= 17; N++)
   {
     uint64_t left = 7500 * 1e6 / divider_values[N];
     if(fout >= left) 
     {
-      //chdiv = divider_values[N];
-      //return divider_values[N];
       return N;
     }
   }
+  //return 0;     //без этого ретерна выдет предупреждение, так то вообще ненужен 
 }
 
-uint16_t low_16bit(uint32_t value) {
+uint16_t low_16bit(uint32_t value) 
+{
     // Младшая 16-битная часть
     uint16_t low  = (uint16_t)(value & 0xFFFF);
     return low; 
 }
 
-uint16_t high_16bit(uint32_t value) {
+uint16_t high_16bit(uint32_t value) 
+{
     // Старшая часть (в примере для 32-битного числа хватит одного сдвига)
     uint16_t high = (uint16_t)((value >> 16) & 0xFFFF);    
     return high;
