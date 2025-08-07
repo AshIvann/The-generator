@@ -174,6 +174,7 @@ void setup()
 
 void loop()
 {
+  
   enc1.tick(); 
   char key = keypad.getKey();
   if (key)
