@@ -5,7 +5,6 @@
 #include "GyverEncoder.h"
 #include "Keypad.h"
 
-
 //Пины для дислпея 
 #define TFT_DC   8     //datacomand 
 #define TFT_RST  9     //reset
@@ -22,7 +21,6 @@
 #define SPICLOCK  13//sck    
 #define CHIPSELECT 10//ss    
  
-
 #define R0 0x00
 #define R1 0x01
 #define R7 0x07
@@ -195,7 +193,7 @@ void loop()
         tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
         key_number = 12e6;
         tft.print("12.000000 MHz");
-        //second_set_freq(12000);
+        //second_set_freq(key_number);
       }
       else if(key_number >= 19e9)
       {
@@ -204,7 +202,6 @@ void loop()
         key_number = 19e9;
         tft.print("19000.000000 MHz");
         //second_set_freq(key_number);
-        
       }
       else
       {
@@ -216,7 +213,7 @@ void loop()
         tft.print(".");
         tft.print(key_last_six);
         tft.print("MHz");
-      //second_set_freq(key_number);
+        //second_set_freq(key_number);
       }
       number = key_number;
       key_number = 0;             //отчищает переменную для новой записи 
@@ -445,7 +442,6 @@ else        //<7500
     uint32_t pll_den = 10000000;                              
     int NUM = (last_six * chdiv) / pll_den;
     uint16_t pll_n = (first_five * chdiv) / 10 + NUM;   //10 это частота фазового детектора
-
 
     long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
 
