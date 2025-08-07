@@ -3,6 +3,7 @@
 #include <Adafruit_ST7789.h>  // Hardware-specific library for ST7789
 #include <math.h>
 #include "GyverEncoder.h"
+#include "Keypad.h"
 
 
 //Пины для дислпея 
@@ -91,7 +92,7 @@ void writeRegister(uint8_t address, uint16_t data);                       //пе
 char spi_transfer(volatile uint8_t data);                                 //настройка SPI
 void settings_spi();                                                      //настройка SPI
 byte send_SPI_byte(uint8_t val1);                                         //передача байта по SPI
-uint16_t dec_to_bin(uint16_t num);        //вероятно неработает   
+uint16_t dec_to_bin(uint16_t num);               //вероятно неработает   
 void set_freq(uint16_t fout, uint16_t power);                             //установка частоты до гигагерца 
 uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits);       //перемещение 6 битов на место 8-13(используется для установки мощности), original изначальный адресс, в котором изменяется 8-13 байт, new_bits биты которые ставятся в 8-13 биты 
 uint8_t fractional(float number);                                         //отделяет цифры после запятой
@@ -126,70 +127,35 @@ uint64_t number = 107972001;            //выбор частоты для secon
 uint32_t last_six = number % 1000000;
 uint32_t first_five = number / 1000000;
 
-void testtriangles() {
-  tft.fillScreen(ST77XX_BLACK);
-  uint16_t color = 0xF800;
-  int t;
-  int w = tft.width()/2;
-  int x = tft.height();
-  int y = 0;
-  int z = tft.width();
-  for(t = 0 ; t <= 25; t++) {
-    tft.drawTriangle(w, y, y, x, z, x, color);
-    x-=4;
-    y+=4;
-    z-=4;
-    color+=100;
-  }
-}
+uint64_t key_number = 0;
 
-void testlines(uint16_t color) {
-  tft.fillScreen(ST77XX_BLACK);
-  for (int16_t x=0; x < tft.width(); x+=15) 
-  {
-    tft.drawLine(0, 0, x, tft.height()-1, color);
-  }
-  for (int16_t y=tft.height()+10; y > 0; y-=15) 
-  {
-    tft.drawLine(0, 0, tft.width()-1, y, color);
-  }
-   for (int16_t y=5; y < tft.height(); y+=15) 
-   {
-    tft.drawLine(0, 0, tft.width()-1, y, color);
-  }
-  for (int16_t x=tft.width() - 10; x > 0; x-=15) 
-  {
-    tft.drawLine(0, 0, x, tft.height()-1, color);
-  }
+uint32_t key_last_six = key_number % 1000000;
+uint32_t key_first_five = key_number / 1000000;
+
+const byte ROWS = 4;   // Количество рядов 
+const byte COLS = 4;   // Количество строк 
  
-}
+char keys[ROWS][COLS] = 
+{
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {A3, A2, A1, A0}; // Выводы, подключение к строкам
+byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к столбцам  
+ 
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 void setup() 
 {
   //settings_spi();
   tft.init(240, 320);
-    
   tft.fillScreen(ST77XX_BLACK); 
   tft.setRotation(1);   
-
-  // Set text color and size
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(3);
-
-  /*убрал на время // Display static labels
-  
-  tft.setCursor(10, 30);
-  tft.print("Freq: ");                                              
-  tft.setCursor(110, 30);
-  tft.print(freq);
-  tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
-  tft.print(" MHz");
-  tft.setCursor(10, 85);
-  tft.print("Power: ");
-  tft.setCursor(130, 85);
-  tft.print(power);
-  tft.print(" Units");
-*/
   
   Serial.begin(9600);
   enc1.setTickMode(TYPE2);
@@ -211,7 +177,60 @@ void setup()
 void loop()
 {
   enc1.tick(); 
-  
+  char key = keypad.getKey();
+  if (key)
+  {
+    if(key >= '0' && key <= '9')
+    {
+      key_number = (key_number * 10) + (key - 48);
+      tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
+      tft.setCursor(0, 40);
+      tft.print((uint32_t)key_number);
+    }
+    else if(key == 'A')
+    {
+      if(key_number < 12e6)
+      {
+        tft.setCursor(8,8);
+        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+        key_number = 12e6;
+        tft.print("12.000000 MHz");
+        //second_set_freq(12000);
+      }
+      else if(key_number >= 19e9)
+      {
+        tft.setCursor(8,8);
+        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+        key_number = 19e9;
+        tft.print("19000.000000 MHz");
+        //second_set_freq(key_number);
+        
+      }
+      else
+      {
+        key_last_six = key_number % 1000000;
+        key_first_five = key_number / 1000000;
+        tft.setCursor(8,8);
+        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+        tft.print(key_first_five);
+        tft.print(".");
+        tft.print(key_last_six);
+        tft.print("MHz");
+      //second_set_freq(key_number);
+      }
+      number = key_number;
+      key_number = 0;             //отчищает переменную для новой записи 
+    }
+    
+    // else if(key == 'C')
+    // {
+    //   key_number = 0;
+    //   tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
+    //   tft.setCursor(0, 40);
+    //   tft.print((uint32_t)key_number);
+    // }
+  }
+
   if(enc1.isClick())
   {
     increase_value *= 10;
@@ -238,7 +257,7 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
     
-    second_set_freq(number);
+    //second_set_freq(number);
   }
 
   if(enc1.isLeft())
@@ -254,7 +273,7 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
 
-    second_set_freq(number);
+    //second_set_freq(number);
   } 
  
 /*старое управление частотой и мощностью
