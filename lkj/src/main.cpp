@@ -2,6 +2,7 @@
 #include <Adafruit_GFX.h>     // Core graphics library
 #include <Adafruit_ST7789.h>  // Hardware-specific library for ST7789
 #include <math.h>
+#include "cinttypes"
 #include "GyverEncoder.h"
 #include "Keypad.h"
 
@@ -107,7 +108,7 @@ unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 1
 unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
 
 int counter = 75;
-int power_counter = 10;
+//int power_counter = 10;
 int click_counter = 1;
 
 int time1 = 0;              //используется в функции turning_speed 
@@ -117,15 +118,17 @@ int time_diff;              //используется в функции turning
 uint16_t freq = 75;          //частота которая вызывается в setup
 uint16_t power = 10;         //мощность которая вызывается в setup
 
+uint8_t powr2 = 10;
+
 uint32_t increase_value = 1;     //переменная отвечающая за изменение значения частоты 
 int power_increment = 1;         //переменная отвечающая за изменение значения мощности 
 int position = 8;                
 
-uint64_t number = 107972001;            //выбор частоты для second_freq
+uint64_t number = 25000000;            //выбор частоты для second_freq
 uint32_t last_six = number % 1000000;
 uint32_t first_five = number / 1000000;
 
-uint64_t key_number = 0;
+uint64_t key_number = 0;               //клавиатуры 
 
 uint32_t key_last_six = key_number % 1000000;
 uint32_t key_first_five = key_number / 1000000;
@@ -172,10 +175,13 @@ void setup()
   tft.print("MHz");
 }
 
+uint8_t power_counter = 1;
+
 void loop()
 {
-  
+
   enc1.tick(); 
+  
   char key = keypad.getKey();
   if (key)
   {
@@ -214,20 +220,33 @@ void loop()
         tft.print(".");
         tft.print(key_last_six);
         tft.print("MHz");
-        //second_set_freq(key_number);
+        second_set_freq(key_number);
       }
       number = key_number;
       key_number = 0;             //отчищает переменную для новой записи 
     }
     
-    // else if(key == 'C')
-    // {
-    //   key_number = 0;
-    //   tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
-    //   tft.setCursor(0, 40);
-    //   tft.print((uint32_t)key_number);
-    // }
+    else if(key == 'C')
+    {
+      key_number = 0;
+      tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
+      tft.setCursor(0, 40);
+      tft.print((uint32_t)key_number);
+    }
+
+    else if(key == 'D')
+    {
+      key_number = key_number / 10;
+      tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
+      tft.setCursor(0, 40);
+      tft.print((uint32_t)key_number);
+    }
+
   }
+
+
+
+
 
   if(enc1.isClick())
   {
@@ -245,6 +264,7 @@ void loop()
   if(enc1.isRight())
   {
     //turning_speed();
+
     last_six = number % 1000000;
     first_five = number / 1000000;
     tft.setCursor(8,8);
@@ -255,7 +275,8 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
     
-    //second_set_freq(number);
+    second_set_freq(number);
+    writeRegister(R44, 0b0000000110100011);
   }
 
   if(enc1.isLeft())
@@ -271,10 +292,17 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
 
-    //second_set_freq(number);
+    second_set_freq(number);
+    writeRegister(R44, 0b0000000110100011);
   } 
  
-/*старое управление частотой и мощностью
+
+
+
+
+
+/*
+//старое управление частотой и мощностью
   if(enc1.isClick())
   { 
     click_counter = click_counter + 1;
@@ -468,14 +496,20 @@ else        //<7500
     writeRegister(R43, low_16bit(num_fractional_part));
     writeRegister(R42, high_16bit(num_fractional_part));
 
+
+    writeRegister(R44, replace_bits_8_to_13(0x1EA3, dec_to_bin(power)));
+
     writeRegister(R0, 0b0010010000011100);
+
+
+    
 
   }
 }
 
 void set_generator()
 {
-  //выдвет 75 МГц                        
+  //выдает 75 МГц                        
     // Program RESET = 1 to reset registers
     writeRegister(R0, 0b0010010000011110);
     //Program RESET = 0 to remove reset
@@ -876,17 +910,6 @@ uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits)
   return final;
 }
 
-uint16_t replace_bits_6_to_10(uint16_t original, uint8_t new_bits)
-{
-  // Маска для очистки битов 8-13: 0b0000100000000000
-  uint16_t mask = 0x2048;
-  new_bits &= 0x3F;
-  uint16_t shifted_bits = (uint16_t)new_bits << 5;
-  // Очищаем биты 8-13 и вставляем новые
-  uint16_t final = (original & mask) | shifted_bits;
-  return final;
-}
-
 uint8_t fractional(float number)          //отделяет цифру после запятой
 {
   
@@ -906,7 +929,7 @@ int find_chdiv(uint64_t fout)
       return N;
     }
   }
-  //return 0;     //без этого ретерна выдет предупреждение, так то вообще ненужен 
+  //return 0;     
 }
 
 uint16_t low_16bit(uint32_t value) 
