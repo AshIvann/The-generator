@@ -2,7 +2,9 @@
 #include <Adafruit_GFX.h>     // Core graphics library
 #include <Adafruit_ST7789.h>  // Hardware-specific library for ST7789
 #include <math.h>
-#include "cinttypes"
+
+#include "stdint.h"
+
 #include "GyverEncoder.h"
 #include "Keypad.h"
 
@@ -128,7 +130,7 @@ uint64_t number = 25000000;            //выбор частоты для second
 uint32_t last_six = number % 1000000;
 uint32_t first_five = number / 1000000;
 
-uint64_t key_number = 0;               //клавиатуры 
+uint64_t key_number = 0;               
 
 uint32_t key_last_six = key_number % 1000000;
 uint32_t key_first_five = key_number / 1000000;
@@ -175,7 +177,6 @@ void setup()
   tft.print("MHz");
 }
 
-uint8_t power_counter = 1;
 
 void loop()
 {
@@ -194,24 +195,25 @@ void loop()
     }
     else if(key == 'A')
     {
-      if(key_number < 12e6)
-      {
-        tft.setCursor(8,8);
-        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-        key_number = 12e6;
-        tft.print("12.000000 MHz");
-        //second_set_freq(key_number);
-      }
-      else if(key_number >= 19e9)
-      {
-        tft.setCursor(8,8);
-        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-        key_number = 19e9;
-        tft.print("19000.000000 MHz");
-        //second_set_freq(key_number);
-      }
-      else
-      {
+      // if(key_number < 12e6)
+      // {
+      //   tft.setCursor(8,8);
+      //   tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+      //   key_number = 12e6;
+      //   tft.print("12.000000 MHz");
+      //   //second_set_freq(key_number);
+      // }
+      // else if(key_number >= 19e9)
+      // {
+      //   tft.setCursor(8,8);
+      //   tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
+      //   key_number = 19e9;
+      //   tft.print("19000.000000 MHz");
+      //   //second_set_freq(key_number);
+      // }
+      //else
+      //{
+        key_number = key_number * 1000000;
         key_last_six = key_number % 1000000;
         key_first_five = key_number / 1000000;
         tft.setCursor(8,8);
@@ -220,8 +222,9 @@ void loop()
         tft.print(".");
         tft.print(key_last_six);
         tft.print("MHz");
+
         second_set_freq(key_number);
-      }
+      //}
       number = key_number;
       key_number = 0;             //отчищает переменную для новой записи 
     }
@@ -276,7 +279,7 @@ void loop()
     tft.print("MHz");
     
     second_set_freq(number);
-    writeRegister(R44, 0b0000000110100011);
+    writeRegister(R44, 0b0000001010100011);
   }
 
   if(enc1.isLeft())
@@ -293,7 +296,7 @@ void loop()
     tft.print("MHz");
 
     second_set_freq(number);
-    writeRegister(R44, 0b0000000110100011);
+    writeRegister(R44, 0b0000001010100011);
   } 
  
 
@@ -474,19 +477,19 @@ else        //<7500
 
     long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
 
-    tft.setCursor(0,38);
+    tft.setCursor(0,58);
     tft.setTextColor(ST77XX_YELLOW);  
-    tft.fillRect(0, 38, 320, 21, ST77XX_BLACK);
+    tft.fillRect(0, 58, 320, 21, ST77XX_BLACK);
     tft.print("pll_n = ");
     tft.print(pll_n);
 
-    tft.setCursor(0,63);
-    tft.fillRect(0, 63, 320, 21, ST77XX_BLACK);
+    tft.setCursor(0,83);
+    tft.fillRect(0, 83, 320, 21, ST77XX_BLACK);
     tft.print("PLL_NUM=");
     tft.print(num_fractional_part);
 
-    tft.setCursor(0,88);
-    tft.fillRect(0, 88, 320, 21, ST77XX_BLACK);
+    tft.setCursor(0,108);
+    tft.fillRect(0, 108, 320, 21, ST77XX_BLACK);
     tft.print("chdiv=");
     tft.print(chdiv);
 
