@@ -193,7 +193,7 @@ void loop()
       tft.setCursor(0, 40);
       tft.print((uint32_t)key_number);
     }
-    else if(key == 'A')
+    else if(key == '*')
     {
       // if(key_number < 12e6)
       // {
@@ -215,7 +215,7 @@ void loop()
       //{
         key_number = key_number * 1000000;
         key_last_six = key_number % 1000000;
-        key_first_five = key_number / 1000000;
+        key_first_five = key_number / 10000000;
         tft.setCursor(8,8);
         tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
         tft.print(key_first_five);
@@ -270,8 +270,8 @@ void loop()
 
     last_six = number % 1000000;
     first_five = number / 1000000;
-    tft.setCursor(8,8);
     number += increase_value;
+    tft.setCursor(8,8);
     tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
     tft.print(first_five);
     tft.print(".");
@@ -279,7 +279,7 @@ void loop()
     tft.print("MHz");
     
     second_set_freq(number);
-    writeRegister(R44, 0b0000001010100011);
+    writeRegister(R44, 0b00011010010100011);
   }
 
   if(enc1.isLeft())
@@ -287,8 +287,8 @@ void loop()
     //turning_speed();
     last_six = number % 1000000;
     first_five = number / 1000000;
-    tft.setCursor(8,8);
     number -= increase_value;
+    tft.setCursor(8,8);
     tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
     tft.print(first_five);
     tft.print(".");
@@ -296,13 +296,9 @@ void loop()
     tft.print("MHz");
 
     second_set_freq(number);
-    writeRegister(R44, 0b0000001010100011);
+    writeRegister(R44, 0b00011010010100011);
   } 
  
-
-
-
-
 
 /*
 //старое управление частотой и мощностью
@@ -467,6 +463,9 @@ else        //<7500
     writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
     writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
     writeRegister(R31, 0b0100001111101100);   //включил CHDIV
+
+    first_five = fout / 1000000;
+    last_six = fout % 1000000;
 
     chdiv = divider_values[find_chdiv(fout)];
     chdiv_reg = reg_divider[find_chdiv(fout)];
