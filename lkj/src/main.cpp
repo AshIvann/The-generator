@@ -223,6 +223,7 @@ void loop()
         tft.print(key_last_six);
         tft.print("MHz");
 
+        writeRegister(R44, 0b0000110110100011);
         second_set_freq(key_number);
       //}
       number = key_number;
@@ -278,15 +279,16 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
     
+    writeRegister(R44, 0b0000110110100011);
     second_set_freq(number);
-    writeRegister(R44, 0b00011010010100011);
+    
   }
 
   if(enc1.isLeft())
   {
     //turning_speed();
-    last_six = number % 1000000;
-    first_five = number / 1000000;
+    last_six = number % (uint32_t)1e6;
+    first_five = number / 1e6;
     number -= increase_value;
     tft.setCursor(8,8);
     tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
@@ -295,8 +297,9 @@ void loop()
     tft.print(last_six);
     tft.print("MHz");
 
+    writeRegister(R44, 0b0000110110100011);
     second_set_freq(number);
-    writeRegister(R44, 0b00011010010100011);
+    
   } 
  
 
@@ -499,7 +502,7 @@ else        //<7500
     writeRegister(R42, high_16bit(num_fractional_part));
 
 
-    writeRegister(R44, replace_bits_8_to_13(0x1EA3, dec_to_bin(power)));
+    //writeRegister(R44, replace_bits_8_to_13(0x1EA3, dec_to_bin(power)));
 
     writeRegister(R0, 0b0010010000011100);
 
