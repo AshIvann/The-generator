@@ -102,6 +102,10 @@ void second_set_freq(uint64_t fout);                                      //ус
 int find_chdiv(uint64_t fout);                                            //определение значения делителя
 uint16_t low_16bit(uint32_t);                                             //выделяет младшие 16 бит из 32 битной переменной
 uint16_t high_16bit(uint32_t);                                            //выделяет старшие 16 бит из 32 битной переменной 
+int getDigitCount(uint64_t);                                              //возвращает количество цифр в числе 
+void print_freq(uint64_t numer, int x , int y);                           //корректный вывод частоты (без пропажи нулей)
+void set_power(uint16_t power);                                           //установка частоты 
+
 
 byte clr;
 uint8_t address=0;
@@ -109,8 +113,13 @@ uint8_t address=0;
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
 unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
 
+double power_1_Units[33] = 
+
+
+
+
 int counter = 75;
-//int power_counter = 10;
+int power_counter = 10;
 int click_counter = 1;
 
 int time1 = 0;              //используется в функции turning_speed 
@@ -166,15 +175,22 @@ void setup()
   set_generator();                                          //изменить частоту с 75 МГц на другую
   tft.fillRect(165 , 31, 20, 3, ST77XX_BLUE);
 
-  last_six = number % 1000000;
-  first_five = number / 1000000;
-  tft.setCursor(8,8);
-  number += increase_value;
-  tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-  tft.print(first_five);
-  tft.print(".");
-  tft.print(last_six);
-  tft.print("MHz");
+
+  tft.setCursor(10, 30);
+  tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
+  tft.setTextColor(ST77XX_WHITE);
+  //tft.setTextSize(2);                                     
+  tft.print("Freq: ");
+  tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
+
+  tft.setCursor(10, 85);
+  tft.setTextColor(ST77XX_WHITE);
+  //tft.setTextSize(2);                                     
+  tft.print("Power: ");
+  tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
+
+  print_freq(number, 100, 30);
+
 }
 
 
@@ -189,43 +205,36 @@ void loop()
     if(key >= '0' && key <= '9')
     {
       key_number = (key_number * 10) + (key - 48);
-      tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);
-      tft.setCursor(0, 40);
-      tft.print((uint32_t)key_number);
+
+      // tft.fillRect(0, 40, 200, 22, ST77XX_BLACK);       //перенести или убрать  
+      // tft.setCursor(0, 40);
+      // tft.print((uint32_t)key_number);
     }
-    else if(key == '*')
+    else if(key == 'A')
     {
-      // if(key_number < 12e6)
-      // {
-      //   tft.setCursor(8,8);
-      //   tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-      //   key_number = 12e6;
-      //   tft.print("12.000000 MHz");
-      //   //second_set_freq(key_number);
-      // }
-      // else if(key_number >= 19e9)
-      // {
-      //   tft.setCursor(8,8);
-      //   tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-      //   key_number = 19e9;
-      //   tft.print("19000.000000 MHz");
-      //   //second_set_freq(key_number);
-      // }
-      //else
-      //{
-        key_number = key_number * 1000000;
-        key_last_six = key_number % 1000000;
-        key_first_five = key_number / 10000000;
-        tft.setCursor(8,8);
-        tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-        tft.print(key_first_five);
-        tft.print(".");
-        tft.print(key_last_six);
-        tft.print("MHz");
+      if(key_number < 12e6)
+      {
+        tft.setCursor(100,30);
+        tft.fillRect(100, 30, 320, 21, ST77XX_BLACK);
+        key_number = 12e6;
+        tft.print("12.000000MHz");
+        second_set_freq(key_number);
+      }
+      else if(key_number >= 19e9)
+      {
+        tft.setCursor(100,30);
+        tft.fillRect(100, 30, 320, 21, ST77XX_BLACK);
+        key_number = 19e9;
+        tft.print("19000.000000 MHz");
+        second_set_freq(key_number);
+      }
+      else
+      {
+        print_freq(key_number, 100, 30);
 
         writeRegister(R44, 0b0000110110100011);
         second_set_freq(key_number);
-      //}
+      }
       number = key_number;
       key_number = 0;             //отчищает переменную для новой записи 
     }
@@ -248,12 +257,9 @@ void loop()
 
   }
 
-
-
-
-
   if(enc1.isClick())
   {
+    /* при нажатии происходит выбор десятки на которую увеличивается число 
     increase_value *= 10;
     position--;
     if(increase_value >= 1000000000)
@@ -263,45 +269,102 @@ void loop()
     }
     tft.fillRect(0, 31, 320, 3, ST77XX_BLACK);
     tft.fillRect(position * 22, 31, 20, 3, ST77XX_BLUE);
+    */
+
+    click_counter = click_counter + 1;
+    if(click_counter % 2 == 1)
+    {
+      tft.setCursor(10, 30);
+      tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
+      tft.setTextColor(ST77XX_WHITE);
+      //tft.setTextSize(2);
+      tft.print("Freq: ");
+      tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
+    }
+    else
+    {
+      tft.setCursor(10, 85);
+      tft.fillRect(8, 106, 265, 2, ST77XX_BLUE);
+      tft.setTextColor(ST77XX_WHITE);
+      //tft.setTextSize(2);
+      tft.print("Power: ");
+      tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
+    }
   }    
 
-  if(enc1.isRight())
+  if(click_counter % 2 == 1)    //изменение частоты 
   {
-    //turning_speed();
+    if(enc1.isRight())
+    {
+      number += increase_value;
+      if(number > 19e9) 
+      {
+        number = 19e9;
+      }
+      print_freq(number, 100, 30);
 
-    last_six = number % 1000000;
-    first_five = number / 1000000;
-    number += increase_value;
-    tft.setCursor(8,8);
-    tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-    tft.print(first_five);
-    tft.print(".");
-    tft.print(last_six);
-    tft.print("MHz");
-    
-    writeRegister(R44, 0b0000110110100011);
-    second_set_freq(number);
-    
+      second_set_freq(number);
+    }
+
+    if(enc1.isLeft())
+    {
+      number -= increase_value;
+      if(number < 12e6 )
+      {
+        number = 12e6;
+      }
+      print_freq(number, 100, 30);
+
+      second_set_freq(number);
+    } 
   }
 
-  if(enc1.isLeft())
+  else                    //изменение мощности 
   {
-    //turning_speed();
-    last_six = number % (uint32_t)1e6;
-    first_five = number / 1e6;
-    number -= increase_value;
-    tft.setCursor(8,8);
-    tft.fillRect(8, 8, 320, 21, ST77XX_BLACK);
-    tft.print(first_five);
-    tft.print(".");
-    tft.print(last_six);
-    tft.print("MHz");
-
-    writeRegister(R44, 0b0000110110100011);
-    second_set_freq(number);
+    if(enc1.isRight())       //увеличение на 1
+    {
+      power_counter += power_increment;
+      tft.setCursor(110, 85);
+      tft.fillRect(110, 85, 170, 21, ST77XX_BLACK); 
     
-  } 
- 
+      if(power_counter >= 30 )
+      {
+        power_counter = 30;                                                                   //проверить, что в случае мощности = 0
+        tft.print(power_counter);
+        tft.print(" Units");
+      }
+      else
+      {
+        tft.print(power_counter);
+        power = power_counter;
+        tft.print(" Units");
+        set_power(power);
+      }
+    }
+
+    else if(enc1.isLeft())   //уменьшение на 1
+    {
+      power_counter -= power_increment;
+      tft.setCursor(110, 85);
+      tft.fillRect(110, 85, 170, 21, ST77XX_BLACK); 
+      if(power_counter < 0 )
+      { 
+        power_counter = 0;
+        tft.print(power_counter);
+        tft.print(" Units");
+      }
+      else
+      {
+        tft.print(power_counter);
+        power = power_counter;
+        tft.print(" Units");
+        set_power(power);
+      }
+    }
+  }
+  
+}
+  
 
 /*
 //старое управление частотой и мощностью
@@ -431,10 +494,31 @@ void loop()
   }
 
 */
-}
+
 
 int chdiv;        //используется для получения значения делителя из массива divider_values[]
 int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
+
+void set_power(uint16_t power)
+{
+  writeRegister(R44, replace_bits_8_to_13(0x1EA3, power));
+}
+
+void print_freq(uint64_t number, int x ,int y)
+{
+  last_six = number % (uint32_t)1e6;
+  first_five = number / 1e6;
+  tft.setCursor(x,y);
+  tft.fillRect(x, y, 320, 21, ST77XX_BLACK);
+  tft.print(first_five);
+  tft.print(".");
+  for(int i = 0; i < 6 - getDigitCount(last_six); i++)
+  {
+    tft.print(0) ;
+  }
+  tft.print(last_six);
+  tft.print("MHz");
+}
 
 void second_set_freq(uint64_t fout)
 {
@@ -479,21 +563,19 @@ else        //<7500
 
     long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
 
-    tft.setCursor(0,58);
-    tft.setTextColor(ST77XX_YELLOW);  
-    tft.fillRect(0, 58, 320, 21, ST77XX_BLACK);
-    tft.print("pll_n = ");
-    tft.print(pll_n);
-
-    tft.setCursor(0,83);
-    tft.fillRect(0, 83, 320, 21, ST77XX_BLACK);
-    tft.print("PLL_NUM=");
-    tft.print(num_fractional_part);
-
-    tft.setCursor(0,108);
-    tft.fillRect(0, 108, 320, 21, ST77XX_BLACK);
-    tft.print("chdiv=");
-    tft.print(chdiv);
+    // tft.setCursor(0,58);                         параметры делителей для установки частоты 
+    // tft.setTextColor(ST77XX_YELLOW);  
+    // tft.fillRect(0, 58, 320, 21, ST77XX_BLACK);
+    // tft.print("pll_n = ");
+    // tft.print(pll_n);
+    // tft.setCursor(0,83);
+    // tft.fillRect(0, 83, 320, 21, ST77XX_BLACK);
+    // tft.print("PLL_NUM=");
+    // tft.print(num_fractional_part);
+    // tft.setCursor(0,108);
+    // tft.fillRect(0, 108, 320, 21, ST77XX_BLACK);
+    // tft.print("chdiv=");
+    // tft.print(chdiv);
 
     writeRegister(R75, chdiv_reg);   
 
@@ -510,6 +592,15 @@ else        //<7500
     
 
   }
+}
+
+int getDigitCount(uint64_t number)     
+{
+  if (number == 0) 
+  {
+    return 1;
+  }
+  return (int)(floor(log10(number)) + 1);
 }
 
 void set_generator()
