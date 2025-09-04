@@ -112,13 +112,6 @@ uint8_t address=0;
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
 unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
 
-uint32_t check_freq[33] = {25000000, 50000000, 75000000, 100000000, 150000000, 200000000, 300000000, 400000000, 500000000, 600000000, 700000000, 800000000, 900000000, 1000000000, 1100000000, 1200000000, 1300000000, 1400000000, 1500000000, 1600000000, 1700000000, 1800000000, 1900000000, 2000000000, 2100000000, 2200000000, 2300000000, 2400000000, 2500000000, 2600000000, 2700000000, 2800000000, 2900000000};
-
-
-
-
-
-
 float power_counter = 10;
 int click_counter = 1;
 
@@ -226,9 +219,10 @@ void loop()
       {
         //key_number = key_number * 1000000;
         print_freq(key_number, 100, 30);
-
+        set_power(find_power_level(number, power));
         second_set_freq(key_number);
-        find_power_level(key_number, power);
+        //find_power_level(key_number, power);
+
       }
       number = key_number;
       key_number = 0;             //отчищает переменную для новой записи 
@@ -344,9 +338,9 @@ void loop()
       tft.setCursor(110, 85);
       tft.fillRect(110, 85, 320, 21, ST77XX_BLACK); 
     
-      if(power_counter >= 30)
+      if(power_counter >= 11)
       {
-        power_counter = 30;                                                                   
+        power_counter = 11;                                                                   
       }
       
       tft.print(power_counter);
@@ -355,6 +349,7 @@ void loop()
 
       //set_power(power);
       set_power(find_power_level(number, power));
+      //find_power_level(number, power);
     }
 
     else if(enc1.isLeft())   //уменьшение на 1
@@ -373,6 +368,7 @@ void loop()
 
       //set_power(power);
       set_power(find_power_level(number, power));
+      //find_power_level(number, power);
     }
   }
   
@@ -382,11 +378,15 @@ void loop()
 int chdiv;        //используется для получения значения делителя из массива divider_values[]
 int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
 
-int find_power_level(uint64_t target_freq, float taregt_power)
+int find_power_level(uint64_t target_freq, float target_power)
 {
   
+  //определение ближайшей частоты из таблицы к той, которую задали 
   int closest_index = 0;
+  uint32_t left_freq_index;
+  uint32_t right_freq_index;
   uint32_t min_diff = abs(target_freq - check_freq[0]);
+
   for(int i = 1; i < 33; i++)
   {
     uint32_t current_freq = check_freq[i];
@@ -398,30 +398,111 @@ int find_power_level(uint64_t target_freq, float taregt_power)
     }
   }
 
-  int best_level = 0;
-  if(taregt_power == 0)
+
+  if(min_diff == 0)                                                       //переделать, чтобы без if, if else  и тд
   {
-    best_level = 1;
+    left_freq_index = right_freq_index = closest_index;
   }
   else
   {
-    float best_diff = abs(taregt_power - pgm_read_float(&power_table[0][closest_index]));                
-    for(int level = 1; level <= power_level; level++ )
+    if(target_freq < check_freq[0])
     {
-      float current_dbm = pgm_read_float(&power_table[level][closest_index]);
-      float diff = abs(taregt_power - current_dbm);
-      if(abs(diff) <= abs(best_diff))
+      left_freq_index = right_freq_index = 0;
+    }
+    else if(target_freq < check_freq[closest_index])
+    {
+      right_freq_index = closest_index;
+      left_freq_index = closest_index - 1;
+    }
+     else if(target_freq > check_freq[closest_index])
+    {
+      right_freq_index = closest_index + 1;
+      left_freq_index = closest_index;
+    }
+   
+  }
+
+  //int best_level = 0;
+  // if(target_power == 0)
+  // {
+  //   best_level = 1;
+  // }
+  // else
+  // {
+  //   float best_diff = abs(target_power - pgm_read_float(&power_table[0][closest_index]));                
+  //   for(int level = 1; level <= power_level; level++ )
+  //   {
+  //     float current_dbm = pgm_read_float(&power_table[level][closest_index]);
+  //     float diff = abs(target_power - current_dbm);
+  //     if(abs(diff) <= abs(best_diff))
+  //     {
+  //       best_diff = diff;
+  //       best_level = level;
+  //     }
+  //   }
+  // }
+
+
+  int best_left_level;
+  int best_right_level;
+  float best_left_diff;
+  float best_right_diff;
+  int best_level;
+
+     best_left_diff = abs(target_power - pgm_read_float(&power_table[0][left_freq_index]));
+     for(int level = 1; level <= power_level; level++ )
+    {
+      float current_dbm = pgm_read_float(&power_table[level][left_freq_index]);
+      float diff = abs(target_power - current_dbm);
+      if(abs(diff) <= abs(best_left_diff))
       {
-        best_diff = diff;
-        best_level = level;
+        best_left_diff = diff;
+        best_left_level = level;
       }
     }
+
+
+    best_right_diff = abs(target_power - pgm_read_float(&power_table[0][right_freq_index]));
+     for(int level = 1; level <= power_level; level++ )
+    {
+      float current_dbm = pgm_read_float(&power_table[level][right_freq_index]);
+      float diff = abs(target_power - current_dbm);
+      if(abs(diff) <= abs(best_right_diff))
+      {
+        best_right_diff = diff;
+        best_right_level = level;
+      }
+    }
+
+    //long after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], best_left_level, best_right_level);
+
+
+
+  if(best_right_diff <= best_left_diff)
+  {
+    best_level = best_right_level;
   }
+  else
+  {
+    best_level = best_left_level;
+  }
+
+
+
   tft.setCursor(0,200);
   tft.fillRect(0,200,320,20,ST77XX_BLACK);
-  tft.print(best_level);
-  tft.print(" ");
-  tft.print(check_freq[closest_index]);
+  // tft.print(best_left_level);
+  // tft.print(" ");
+  // tft.print(left_freq_index);
+  // tft.print(" ");
+  // tft.print(" ");
+  // tft.print(best_right_level);
+  // tft.print(" ");
+  // tft.print(right_freq_index);
+  // tft.print(" ");
+  //tft.print(after_map);
+
+
   return best_level;
 }
 
