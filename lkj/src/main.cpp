@@ -7,6 +7,7 @@
 #include "Keypad.h"
 
 #include "power_table.h"
+#include "gen_function.h"
 
 //Пины для дислпея 
 #define TFT_DC   8     //datacomand 
@@ -349,6 +350,7 @@ void loop()
 
       //set_power(power);
       set_power(find_power_level(number, power));
+      //tft.print();
       //find_power_level(number, power);
     }
 
@@ -401,7 +403,8 @@ int find_power_level(uint64_t target_freq, float target_power)
 
   if(min_diff == 0)                                                       //переделать, чтобы без if, if else  и тд
   {
-    left_freq_index = right_freq_index = closest_index;
+    left_freq_index  = closest_index;
+    right_freq_index = closest_index;
   }
   else
   {
@@ -421,27 +424,8 @@ int find_power_level(uint64_t target_freq, float target_power)
     }
    
   }
-
-  //int best_level = 0;
-  // if(target_power == 0)
-  // {
-  //   best_level = 1;
-  // }
-  // else
-  // {
-  //   float best_diff = abs(target_power - pgm_read_float(&power_table[0][closest_index]));                
-  //   for(int level = 1; level <= power_level; level++ )
-  //   {
-  //     float current_dbm = pgm_read_float(&power_table[level][closest_index]);
-  //     float diff = abs(target_power - current_dbm);
-  //     if(abs(diff) <= abs(best_diff))
-  //     {
-  //       best_diff = diff;
-  //       best_level = level;
-  //     }
-  //   }
-  // }
-
+  tft.setCursor(0,200);
+  tft.fillRect(0,200,320,20,ST77XX_BLACK);
 
   int best_left_level;
   int best_right_level;
@@ -474,36 +458,49 @@ int find_power_level(uint64_t target_freq, float target_power)
       }
     }
 
-    //long after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], best_left_level, best_right_level);
+   // float after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], power_table[best_left_level][target_freq], power_table[best_right_level][target_freq]);
 
 
+  // if(abs(best_right_level - best_left_level) >=2 || (abs(target_freq - check_freq[left_freq_index] >= 15000000) && abs(target_freq - check_freq[right_freq_index] >= 15000000)))
+  // {
+  //   best_level = (best_right_level + best_left_level) / 2;
+  // }
+  // else
+  // {
+    if(best_right_diff <= best_left_diff)
+    {
+      best_level = best_right_level;
+    }
+    else
+    { 
+      best_level = best_left_level;
+    }
+ //}
 
-  if(best_right_diff <= best_left_diff)
-  {
-    best_level = best_right_level;
-  }
-  else
-  {
-    best_level = best_left_level;
-  }
-
+  
 
 
   tft.setCursor(0,200);
   tft.fillRect(0,200,320,20,ST77XX_BLACK);
-  // tft.print(best_left_level);
-  // tft.print(" ");
-  // tft.print(left_freq_index);
-  // tft.print(" ");
-  // tft.print(" ");
-  // tft.print(best_right_level);
-  // tft.print(" ");
-  // tft.print(right_freq_index);
-  // tft.print(" ");
-  //tft.print(after_map);
+  tft.print(best_left_level);
+  tft.print(" ");
+  tft.print(left_freq_index);
+  tft.print(" ");
+  tft.print(" ");
+  tft.print(best_right_level);
+  tft.print(" ");
+  tft.print(right_freq_index);
+  tft.print(" ");
+ // tft.print(after_map);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print(best_level);
+  tft.setTextColor(ST77XX_WHITE);
 
+  // tft.setCursor(110, 85);
+  // tft.fillRect(110, 85, 320,20,ST77XX_BLACK);
+ // tft.print(after_map);
 
-  return best_level;
+  return best_left_level;
 }
 
 void set_power(uint16_t power)
