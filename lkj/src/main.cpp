@@ -7,7 +7,7 @@
 #include "Keypad.h"
 
 #include "power_table.h"
-#include "gen_function.h"
+
 
 //Пины для дислпея 
 #define TFT_DC   8     //datacomand 
@@ -220,7 +220,7 @@ void loop()
       {
         //key_number = key_number * 1000000;
         print_freq(key_number, 100, 30);
-        set_power(find_power_level(number, power));
+        //set_power(find_power_level(number, power));
         second_set_freq(key_number);
         //find_power_level(key_number, power);
 
@@ -458,7 +458,16 @@ int find_power_level(uint64_t target_freq, float target_power)
       }
     }
 
-   // float after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], power_table[best_left_level][target_freq], power_table[best_right_level][target_freq]);
+     if(best_right_diff <= best_left_diff)
+    {
+      best_level = best_right_level;
+    }
+    else
+    { 
+      best_level = best_left_level;
+    }
+
+    long after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], power_table[best_level][left_freq_index], power_table[best_level][right_freq_index]);
 
 
   // if(abs(best_right_level - best_left_level) >=2 || (abs(target_freq - check_freq[left_freq_index] >= 15000000) && abs(target_freq - check_freq[right_freq_index] >= 15000000)))
@@ -467,15 +476,8 @@ int find_power_level(uint64_t target_freq, float target_power)
   // }
   // else
   // {
-    if(best_right_diff <= best_left_diff)
-    {
-      best_level = best_right_level;
-    }
-    else
-    { 
-      best_level = best_left_level;
-    }
- //}
+   
+// }
 
   
 
@@ -491,7 +493,7 @@ int find_power_level(uint64_t target_freq, float target_power)
   tft.print(" ");
   tft.print(right_freq_index);
   tft.print(" ");
- // tft.print(after_map);
+  tft.print(after_map);
   tft.setTextColor(ST77XX_YELLOW);
   tft.print(best_level);
   tft.setTextColor(ST77XX_WHITE);
@@ -510,8 +512,8 @@ void set_power(uint16_t power)
 
 void print_freq(uint64_t number, int x ,int y)
 {
-  last_six = number % (uint32_t)1e6;
   first_five = number / 1e6;
+  last_six = number % (uint32_t)1e6;
   tft.setCursor(x,y);
   tft.fillRect(x, y, 320, 21, ST77XX_BLACK);
   tft.print(first_five);
