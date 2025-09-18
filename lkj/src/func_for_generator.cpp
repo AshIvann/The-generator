@@ -2,14 +2,14 @@
 #include "support_func.h"
 
 
-uint64_t number = 25e6;
+uint64_t frq_set_by_encoder = 25e6;
 
 unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
-int chdiv = 0;
+
 int chdiv_reg = 0;
 
 
-void set_power(uint16_t power)
+void set_out_power(uint16_t power)
 {
   writeRegister(R44, replace_bits_8_to_13(0x1EA3, power));
 }
@@ -86,7 +86,7 @@ void set_generator()
   //writeRegister(R45, 0b1101000011011110);   //No output power boost
   writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
   //writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
-  set_power(5);
+  set_out_power(5);
   writeRegister(R43, 0x0000);
   writeRegister(R42, 0x0000);
   writeRegister(R41, 0x0000);
@@ -116,46 +116,33 @@ void set_generator()
 void second_set_freq(uint64_t fout)
 {
 
-  if(fout > 19000000000)
+  if(fout < 19000000000 && fout > 15000000000)   //VCO doubler
   {
-    //ошибка, больше 19 Ghz нельзя 
-  }
-
-  else if(fout < 19000000000 && fout > 15000000000)   //VCO doubler
-  {
-    //VCO doubler
-
-   
+    //VCO doubler 
     writeRegister(R45, 0b1101000011011110);   //переключил выход A на VCO Doubler
     writeRegister(R27, 0b0000000000000011);   //включил VCO2X_EN
+    return;
   }
-
-   else if(fout <15000000000 && fout >7500000000 )    //VCO
+  
+  if(fout <15000000000 && fout >7500000000 )    //VCO
   {
     //VCO
     writeRegister(R46, 0b0000011111111101);   //переключил выход B на VCO
     writeRegister(R45, 0b1100100011011110);   //переключил выход A на VCO
     writeRegister(R27, 0b0000000000000010);   //включил VCO2X_EN    
+    return;
   }
 
-else        //<7500
-  {
+  // else        //<7500
     writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
     writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
     writeRegister(R31, 0b0100001111101100);   //включил CHDIV
 
-    first_five = fout / 1000000;
-    last_six = fout % 1000000;
-
-    chdiv = divider_values[find_chdiv(fout)];
     chdiv_reg = reg_divider[find_chdiv(fout)];
 
-    uint32_t pll_den = 10000000;                              
-    int NUM = (last_six * chdiv) / pll_den;
-    uint16_t pll_n = (first_five * chdiv) / 10 + NUM;   //10 это частота фазового детектора
-
-    long int num_fractional_part = (last_six * chdiv) - NUM * 1e7 + fractional((((float)first_five * (float)chdiv) / 10.0)) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
-
+    uint64_t pll_n = calculation_of_pll_n(fout);
+    uint64_t fractional_divider = calculation_of_pll_num(fout);
+    
     // tft.setCursor(0,58);                         параметры делителей для установки частоты 
     // tft.setTextColor(ST77XX_YELLOW);  
     // tft.fillRect(0, 58, 320, 21, ST77XX_BLACK);
@@ -173,11 +160,10 @@ else        //<7500
     writeRegister(R75, chdiv_reg);   
 
     writeRegister(R36, pll_n);
-    writeRegister(R43, low_16bit(num_fractional_part));
-    writeRegister(R42, high_16bit(num_fractional_part));
+    writeRegister(R43, low_16bit(fractional_divider));
+    writeRegister(R42, high_16bit(fractional_divider));
 
     writeRegister(R0, 0b0010010000011100);
-
-  }
+    return;
 }
 

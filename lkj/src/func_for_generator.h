@@ -70,15 +70,15 @@
 
 
 
-extern int chdiv;        //используется для получения значения делителя из массива divider_values[]
+
 extern int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
 extern unsigned int reg_divider[18];
 
 
 
 void set_generator();                                                     //устанавливает значения необходимых для работы регистров 
-void set_power(uint16_t power);                                           //установка частоты 
-void writeRegister(uint8_t address, uint16_t data);                       //передача дынных в регистр 
-void second_set_freq(uint64_t fout);                                      //установка частоты до герца 
-char spi_transfer(volatile uint8_t data);
-byte send_SPI_byte(uint8_t val1);
+void set_out_power(uint16_t);                                           //установка частоты 
+void writeRegister(uint8_t, uint16_t);                       //передача дынных в регистр 
+void second_set_freq(uint64_t);                                      //установка частоты до герца 
+char spi_transfer(volatile uint8_t);
+byte send_SPI_byte(uint8_t);
