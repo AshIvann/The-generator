@@ -135,8 +135,10 @@ uint32_t calculation_of_pll_num(uint64_t fout)
   return frac_div;
 }
 
-void my_print(uint32_t for_print, uint16_t x, uint16_t y)
+void power_print(uint32_t for_print)
 {
-  tft.setCursor(x, y);
-  tft.fillRect(x, y, SCREEN_WIDTH, 21, ST77XX_BLACK); 
+  tft.setCursor(110, 85);
+  tft.fillRect(110, 85, SCREEN_WIDTH, 21, ST77XX_BLACK); 
+  tft.print(for_print);
+  tft.print(" Units");
 }

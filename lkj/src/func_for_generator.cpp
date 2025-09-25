@@ -184,7 +184,7 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
     return side_freq_index;
   }
   
-  side_freq_index.right_freq_index = side_freq_index.left_freq_index  = closest_freq(target_freq);
+  side_freq_index.right_freq_index = side_freq_index.left_freq_index = closest_freq(target_freq);
 
   if(min_diff == 0)                                                      
     return side_freq_index;
@@ -201,7 +201,7 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
 
 data_of_left_freq detect_best_left_level(uint64_t target_power, freqs &side_freq_index)
 {
-  data_of_left_freq st_left_freq;
+   data_of_left_freq st_left_freq;
 
   st_left_freq.best_left_power_diff = abs(target_power - pgm_read_float(&power_table[0][side_freq_index.left_freq_index]));
      for(int level = 1; level <= power_level; level++ )
@@ -220,8 +220,8 @@ data_of_left_freq detect_best_left_level(uint64_t target_power, freqs &side_freq
 
 data_of_rigth_freq detect_best_right_level(uint64_t target_power, freqs &side_freq_index)
 {
-  data_of_rigth_freq st_right_freq;
-  // data_of_rigth_freq st_rt_fr;
+   data_of_rigth_freq st_right_freq;
+
 
   st_right_freq.best_right_power_diff = abs(target_power - pgm_read_float(&power_table[0][side_freq_index.right_freq_index]));
      for(int level = 1; level <= power_level; level++ )
@@ -239,10 +239,11 @@ data_of_rigth_freq detect_best_right_level(uint64_t target_power, freqs &side_fr
 
 uint32_t get_best_level(float best_right_power_diff, float best_left_power_diff, data_of_rigth_freq &st_right_freq,  data_of_left_freq &st_left_freq)
 {
+  uint64_t best_level;
    if(st_right_freq.best_right_power_diff <= st_left_freq.best_left_power_diff)
   {
     
-    best_level = st_right_freq.best_right_level;
+     best_level = st_right_freq.best_right_level;
   }
   else
   { 
@@ -269,7 +270,7 @@ uint32_t closest_freq(uint64_t target_freq)
   }
   return closest_index;
 }
-
+freqs side_freq_index;
 uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigth_freq &st_right_freq, data_of_left_freq &st_left_freq)
 {
  
@@ -278,12 +279,12 @@ uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigt
   // data_of_rigth_freq data_of_rigth_freq = detect_best_right_level(target_power);
 
 
-  best_level = get_best_level(st_right_freq.best_right_power_diff, st_left_freq.best_left_power_diff);                     //выбор между уровнями на разных частотах 
+  uint64_t best_level = get_best_level(data_of_rigth_freq &best_right_power_diff,   data_of_left_freq &best_left_power_diff,     st_left_freq.best_left_power_diff);                     //выбор между уровнями на разных частотах 
 
-  // first_multiply = power_table[best_level][side_freq_index.left_freq_index] * 100;
-  // second_multiplay = power_table[best_level][side_freq_index.right_freq_index] * 100 ;
+  uint32_t first_multiply = power_table[best_level][side_freq_index.left_freq_index] * 100;
+  uint32_t second_multiplay = power_table[best_level][side_freq_index.right_freq_index] * 100;
 
-  //after_map = map(target_freq, (uint64_t)check_freq[side_freq_index.left_freq_index], check_freq[side_freq_index.right_freq_index], first_multiply, second_multiplay) / 100;
+  uint32_t after_map = map(target_freq, (uint64_t)check_freq[side_freq_index.left_freq_index], check_freq[side_freq_index.right_freq_index], first_multiply, second_multiplay) / 100;
 
   //int i = after_map * 100;
   tft.setCursor(0,200);
@@ -306,5 +307,5 @@ uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigt
   // tft.fillRect(110, 85, 320,20,ST77XX_BLACK);
  // tft.print(after_map);
 
-  return best_level;
+  return after_map;
 }

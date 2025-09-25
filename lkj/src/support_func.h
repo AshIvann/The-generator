@@ -53,4 +53,4 @@ void print_freq(uint64_t, int ,int);
 int get_number_of_characters(uint64_t);                                              //возвращает количество цифр в числе 
 uint32_t calculation_of_pll_n(uint64_t);
 uint32_t calculation_of_pll_num(uint64_t);     
-void my_print(uint32_t, uint16_t, uint16_t);
+void power_print(uint32_t);
