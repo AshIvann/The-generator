@@ -4,6 +4,7 @@
 #include "GyverEncoder.h"
 #include "Keypad.h"
 #include <math.h>
+// #include <avr/pgmspace.h>
 
 //Пины для дислпея 
 #define TFT_DC   8     //datacomand 
@@ -18,19 +19,28 @@
 #define PLL_DEN 10e6;
 #define FREQ_OF_PHASE_DETECTOR 10;
 
+#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH 360 
+
 extern Adafruit_ST7789 tft;
 extern Encoder enc1;
-
 extern Keypad keypad ;
-//   = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-//  Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 extern unsigned int divider_values[18];
 
 extern uint64_t freq_set_by_encoder;            //выбор частоты для second_freq
 extern uint32_t first_five;
 extern uint32_t last_six;
-extern uint8_t chdiv;        //используется для получения значения делителя из массива divider_values[];
+
+struct st_freq_params{
+  uint32_t first_five_of_freq;
+  uint32_t last_six_of_freq;
+  uint8_t chdiv;
+  uint32_t int_part_of_frac_div;
+};
+
+
+
 
 
 
@@ -43,3 +53,4 @@ void print_freq(uint64_t, int ,int);
 int get_number_of_characters(uint64_t);                                              //возвращает количество цифр в числе 
 uint32_t calculation_of_pll_n(uint64_t);
 uint32_t calculation_of_pll_num(uint64_t);     
+void my_print(uint32_t, uint16_t, uint16_t);

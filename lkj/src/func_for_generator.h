@@ -73,6 +73,29 @@
 
 extern int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
 extern unsigned int reg_divider[18];
+extern uint64_t best_level;
+extern uint64_t min_diff;
+
+
+struct freqs 
+{
+    uint32_t left_freq_index;
+    uint32_t right_freq_index;
+};
+
+
+struct data_of_rigth_freq
+{
+    float best_right_level;
+    float best_right_power_diff;
+};
+
+struct data_of_left_freq
+{
+    float best_left_level;
+    float best_left_power_diff;
+};
+
 
 
 
@@ -82,3 +105,12 @@ void writeRegister(uint8_t, uint16_t);                       //передача 
 void second_set_freq(uint64_t);                                      //установка частоты до герца 
 char spi_transfer(volatile uint8_t);
 byte send_SPI_byte(uint8_t);
+// freqs detect_index_of_side_freq(uint64_t target_freq);
+// data_of_left_freq detect_best_left_level(uint64_t target_freq);
+// data_of_rigth_freq detect_best_right_level(uint64_t target_freq);
+uint32_t get_best_level(float, float);
+uint32_t closest_freq(uint64_t);
+uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigth_freq &st_right_freq, data_of_left_freq &st_left_freq);
+
+
+

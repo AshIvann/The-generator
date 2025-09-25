@@ -1,7 +1,6 @@
 #include "support_func.h"
 
-#define SCREEN_HEIGHT 240
-#define SCREEN WIDTH 360 
+
 
 
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
@@ -103,29 +102,41 @@ void print_freq(uint64_t fr, int x ,int y)
   tft.print("MHz");
 }
 
+
+
+st_freq_params _get_divider_value(uint64_t fout)
+{
+  st_freq_params st;
+  
+  st.first_five_of_freq = fout / 1000000;
+  st.last_six_of_freq = fout % 1000000;
+  st.chdiv = divider_values[find_chdiv(fout)];
+  st.int_part_of_frac_div = (st.last_six_of_freq * st.chdiv) / 10e6;
+  return st;
+}
+
 uint32_t calculation_of_pll_n(uint64_t fout)
 {
-  uint32_t first_five_of_freq = fout / 1000000;
-  uint32_t last_six_of_freq = fout % 1000000;
-  chdiv = divider_values[find_chdiv(fout)];
-
-  uint32_t integer_part_of_fractional_divider = (last_six_of_freq * chdiv) / PLL_DEN;
-  uint16_t n_devider = (first_five_of_freq * chdiv) / FREQ_OF_PHASE_DETECTOR + integer_part_of_fractional_divider;   //10 это частота фазового детектора
+  st_freq_params st = _get_divider_value(fout);
+  
+  uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / 10 + st.int_part_of_frac_div;   
 
   return n_devider;
 }
 
 uint32_t calculation_of_pll_num(uint64_t fout)      
 {
-uint32_t first_five_of_freq = fout / 1000000;
-uint32_t last_six_of_freq = fout % 1000000;
-chdiv = divider_values[find_chdiv(fout)];                                                                                                                        //не знаю нужно ли это повторно писать, если эта функция идет следом за calculation_of_pll_n, где уже расчитывается эта переменная 
+  st_freq_params st = _get_divider_value(fout);                                                                                                                     //не знаю нужно ли это повторно писать, если эта функция идет следом за calculation_of_pll_n, где уже расчитывается эта переменная 
   
-uint32_t NUM = (last_six_of_freq * chdiv) / PLL_DEN;
-uint32_t fractional_part_of_fractional_divider = (last_six_of_freq * chdiv) - NUM * 1e7;
-uint32_t n_devider = (((float)first_five_of_freq * (float)chdiv) / 10.0);
+  uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv);
+  uint32_t frac_part_of_n_devider = (((float)st.first_five_of_freq * (float)st.chdiv) / 10.0) - ((st.first_five_of_freq * st.chdiv) / 10);
+  uint64_t frac_div = full_frac_div - (st.int_part_of_frac_div * 10e6) + (frac_part_of_n_devider * 10e6); 
 
-uint64_t fractional_divider = fractional_part_of_fractional_divider + get_fractional_part(n_devider) * 1e6;        //дробная часть от NUM. (int) NUM * 1e7 необходимо, чтобы убрать целую часть(если она есть), так как ее я уже прибавил к pll_n
+  return frac_div;
+}
 
-return fractional_divider;
+void my_print(uint32_t for_print, uint16_t x, uint16_t y)
+{
+  tft.setCursor(x, y);
+  tft.fillRect(x, y, SCREEN_WIDTH, 21, ST77XX_BLACK); 
 }

@@ -6,7 +6,7 @@
 #include "GyverEncoder.h"
 #include "Keypad.h"
 
-#include "power_table.h"
+//#include "power_table.h"
 #include "func_for_generator.h"
 #include "support_func.h"
 
@@ -30,7 +30,7 @@
 
   
 void settings_spi();                                                      //настройка SPI
-int find_power_level(uint64_t freq, float taregt_power);
+
 
 byte clr;
 uint8_t address=0;
@@ -238,148 +238,32 @@ void loop()
       tft.print(" Units");
 
       //set_power(power);
-      set_out_power(find_power_level(freq_set_by_encoder, power));
+      //set_out_power(find_power_level(freq_set_by_encoder, power, data_of_rigth_freq&, data_of_left_freq&));
       //tft.print();
       //find_power_level(number, power);
     }
 
-    else if(enc1.isLeft())   //уменьшение на 1
-    {
-      power_counter -= power_increment;
-      tft.setCursor(110, 85);
-      tft.fillRect(110, 85, 320, 21, ST77XX_BLACK); 
-      if(power_counter < 0 )                                                                          //нужно изменить ограничения мощности, от 0 до 11
-      { 
-        power_counter = 0;
-      }
+  //   else if(enc1.isLeft())   //уменьшение на 1
+  //   {
+  //     power_counter -= power_increment;
+  //     tft.setCursor(110, 85);
+  //     tft.fillRect(110, 85, 320, 21, ST77XX_BLACK); 
+  //     if(power_counter < 0 ) 
+  //     { 
+  //       power_counter = 0;
+  //     }
       
-      tft.print(power_counter);
-      power = power_counter;
-      tft.print(" Units");
+  //     tft.print(power_counter);
+  //     power = power_counter;
+  //     tft.print(" Units");
 
-      //set_power(power);
-      set_out_power(find_power_level(freq_set_by_encoder, power));
-      //find_power_level(number, power);
-    }
-  }
+  //     //set_power(power);
+  //     set_out_power(find_power_level(freq_set_by_encoder, power));
+  //     //find_power_level(number, power);
+  //   }
+   }
   
 }
 
-int find_power_level(uint64_t target_freq, float target_power)
-{
-  
-  //определение ближайшей частоты из таблицы к той, которую задали 
-  int closest_index = 0;
-  uint32_t left_freq_index;
-  uint32_t right_freq_index;
-  uint32_t min_diff = abs(target_freq - check_freq[0]);
 
-  for(int i = 1; i < 33; i++)
-  {
-    uint32_t current_freq = check_freq[i];
-    uint32_t diff = abs(target_freq - current_freq) ;
-    if(abs(diff) <= abs(min_diff))                 
-    {
-      min_diff = diff;
-      closest_index = i;
-    }
-  }
-
-
-  if(min_diff == 0)                                                       //переделать, чтобы без if, if else  и тд
-  {
-    left_freq_index  = closest_index;
-    right_freq_index = closest_index;
-  }
-  else
-  {
-    if(target_freq < check_freq[0])
-    {
-      left_freq_index = right_freq_index = 0;
-    }
-    else if(target_freq < check_freq[closest_index])
-    {
-      right_freq_index = closest_index;
-      left_freq_index = closest_index - 1;
-    }
-     else if(target_freq > check_freq[closest_index])
-    {
-      right_freq_index = closest_index + 1;
-      left_freq_index = closest_index;
-    }
-   
-  }
-  tft.setCursor(0,200);
-  tft.fillRect(0,200,320,20,ST77XX_BLACK);
-
-  int best_left_level;
-  int best_right_level;
-  float best_left_diff;
-  float best_right_diff;
-  int best_level;
-
-     best_left_diff = abs(target_power - pgm_read_float(&power_table[0][left_freq_index]));
-     for(int level = 1; level <= power_level; level++ )
-    {
-      float current_dbm = pgm_read_float(&power_table[level][left_freq_index]);
-      float diff = abs(target_power - current_dbm);
-      if(abs(diff) <= abs(best_left_diff))
-      {
-        best_left_diff = diff;
-        best_left_level = level;
-      }
-    }
-
-
-    best_right_diff = abs(target_power - pgm_read_float(&power_table[0][right_freq_index]));
-     for(int level = 1; level <= power_level; level++ )
-    {
-      float current_dbm = pgm_read_float(&power_table[level][right_freq_index]);
-      float diff = abs(target_power - current_dbm);
-      if(abs(diff) <= abs(best_right_diff))
-      {
-        best_right_diff = diff;
-        best_right_level = level;
-      }
-    }
-
-     if(best_right_diff <= best_left_diff)
-    {
-      best_level = best_right_level;
-    }
-    else
-    { 
-      best_level = best_left_level;
-    }
-
-    long after_map = map(target_freq, check_freq[left_freq_index], check_freq[right_freq_index], power_table[best_level][left_freq_index], power_table[best_level][right_freq_index]);
-
-
-
-
-  
-
-
-  tft.setCursor(0,200);
-  tft.fillRect(0,200,320,20,ST77XX_BLACK);
-  tft.print(best_left_level);
-  tft.print(" ");
-  tft.print(left_freq_index);
-  tft.print(" ");
-  tft.print(" ");
-  tft.print(best_right_level);
-  tft.print(" ");
-  tft.print(right_freq_index);
-  tft.print(" ");
-  tft.print(after_map);
-  tft.setTextColor(ST77XX_YELLOW);
-  tft.print(best_level);
-  tft.setTextColor(ST77XX_WHITE);
-
-  // tft.setCursor(110, 85);
-  // tft.fillRect(110, 85, 320,20,ST77XX_BLACK);
- // tft.print(after_map);
-
-  return best_left_level;
-}
 
