@@ -24,8 +24,8 @@ void writeRegister(uint8_t addr, uint16_t data)
     uint8_t rw : 1;             
     uint16_t data;
   };
-
   st_packet packet;
+
   packet.rw = 0;           // Режим записи при 0, чтение при 1                  
   packet.addr = addr;       // Адрес регистра
   packet.data = data;       // данные 
@@ -56,13 +56,7 @@ char spi_transfer(volatile uint8_t data)
 byte send_SPI_byte(uint8_t val1)
  {
    uint8_t data_byte;
- 
-   //digitalWrite(CHIPSELECT,LOW);
-
    data_byte = spi_transfer(val1); //get data byte
-
-   //digitalWrite(CHIPSELECT,HIGH); //release chip, signal end transfer
- 
    return data_byte;
  }
 
@@ -118,7 +112,7 @@ void set_generator()
 void second_set_freq(uint64_t fout)
 {
 
-  if(fout < 19000000000 && fout > 15000000000)   //VCO doubler
+  if(fout < 19e9 && fout > 15e9)   //VCO doubler
   {
     //VCO doubler 
     writeRegister(R45, 0b1101000011011110);   //переключил выход A на VCO Doubler
@@ -126,7 +120,7 @@ void second_set_freq(uint64_t fout)
     return;
   }
   
-  if(fout <15000000000 && fout >7500000000 )    //VCO
+  if(fout <15e9 && fout >75e9 )    //VCO
   {
     //VCO
     writeRegister(R46, 0b0000011111111101);   //переключил выход B на VCO
@@ -135,7 +129,6 @@ void second_set_freq(uint64_t fout)
     return;
   }
 
-  
   // else        //<7500
     writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
     writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
@@ -146,20 +139,6 @@ void second_set_freq(uint64_t fout)
     uint64_t pll_n = calculation_of_pll_n(fout);
     uint64_t fractional_divider = calculation_of_pll_num(fout);
     
-    // tft.setCursor(0,58);                         параметры делителей для установки частоты 
-    // tft.setTextColor(ST77XX_YELLOW);  
-    // tft.fillRect(0, 58, 320, 21, ST77XX_BLACK);
-    // tft.print("pll_n = ");
-    // tft.print(pll_n);
-    // tft.setCursor(0,83);
-    // tft.fillRect(0, 83, 320, 21, ST77XX_BLACK);
-    // tft.print("PLL_NUM=");
-    // tft.print(num_fractional_part);
-    // tft.setCursor(0,108);
-    // tft.fillRect(0, 108, 320, 21, ST77XX_BLACK);
-    // tft.print("chdiv=");
-    // tft.print(chdiv);
-
     writeRegister(R75, chdiv_reg);   
 
     writeRegister(R36, pll_n);
@@ -237,7 +216,8 @@ data_of_rigth_freq detect_best_right_level(uint64_t target_power, freqs &side_fr
     return st_right_freq;
 }
 
-uint32_t get_best_level(float best_right_power_diff, float best_left_power_diff, data_of_rigth_freq &st_right_freq,  data_of_left_freq &st_left_freq)
+//uint32_t get_best_level(float best_right_power_diff, float best_left_power_diff, data_of_rigth_freq &st_right_freq,  data_of_left_freq &st_left_freq)
+uint32_t get_best_level(data_of_rigth_freq &st_right_freq, data_of_left_freq &st_left_freq)
 {
   uint64_t best_level;
    if(st_right_freq.best_right_power_diff <= st_left_freq.best_left_power_diff)
@@ -270,16 +250,24 @@ uint32_t closest_freq(uint64_t target_freq)
   }
   return closest_index;
 }
+
+
+
+
 freqs side_freq_index;
-uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigth_freq &st_right_freq, data_of_left_freq &st_left_freq)
+uint64_t find_power_level(uint64_t target_freq, float target_power)//, data_of_rigth_freq st_right_freq, data_of_left_freq &st_left_freq)
 {
- 
+  data_of_rigth_freq st_right_freq;
+  data_of_left_freq st_left_freq;
   // side_freq_index.left = detect_index_of_side_freq(target_freq);                                 //используется для определения частот левой и парвой от необходимой                               
   // data_of_left_freq data_of_left_freq = detect_best_left_level(target_power);
   // data_of_rigth_freq data_of_rigth_freq = detect_best_right_level(target_power);
 
+  st_left_freq.best_left_level = (uint32_t)&detect_best_left_level(target_power, side_freq_index);
 
-  uint64_t best_level = get_best_level(data_of_rigth_freq &best_right_power_diff,   data_of_left_freq &best_left_power_diff,     st_left_freq.best_left_power_diff);                     //выбор между уровнями на разных частотах 
+
+
+  uint64_t best_level = get_best_level(st_right_freq, st_left_freq);                     //выбор между уровнями на разных частотах 
 
   uint32_t first_multiply = power_table[best_level][side_freq_index.left_freq_index] * 100;
   uint32_t second_multiplay = power_table[best_level][side_freq_index.right_freq_index] * 100;

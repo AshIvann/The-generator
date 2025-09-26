@@ -26,6 +26,7 @@ Encoder enc1(CLK, DT, SW, TYPE2);
 uint64_t freq_set_by_encoder = 25e6;
 
 
+
 uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) 
 {
   // Маска для очистки битов 8-13: 0b1100000111111111
@@ -39,7 +40,7 @@ uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits)
   return final;
 }
 
-int find_chdiv(uint64_t fout)
+uint8_t find_chdiv(uint64_t fout)
 {
   for(int N = 0; N <= 17; N++)
   {
@@ -74,15 +75,14 @@ uint16_t high_16bit(uint32_t value)
     return high;
 }
 
-int get_number_of_characters(uint64_t number)     
+uint8_t get_number_of_characters(uint64_t number)     
 {
   if (!number) 
     return 1;
-
   return (int)(floor(log10(number)) + 1);
 }
 
-void print_freq(uint64_t fr, int x ,int y)
+void print_freq(uint64_t fr, uint8_t x ,uint8_t y)
 {
   uint32_t first_five = fr / 1e6;
   uint32_t last_six = fr % (uint32_t)1e6;

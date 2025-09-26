@@ -26,7 +26,7 @@
 #define R41 0x29
 #define R42 0x2A
 #define R43 0x2B
- #define R44 0x2C 
+#define R44 0x2C 
 #define R45 0x2D
 #define R46 0x2E
 #define R59 0x3B
@@ -108,9 +108,9 @@ void writeRegister(uint8_t, uint16_t);                       //передача 
 void second_set_freq(uint64_t);                                      //установка частоты до герца 
 char spi_transfer(volatile uint8_t);
 byte send_SPI_byte(uint8_t);
-uint32_t get_best_level(data_of_rigth_freq&, data_of_left_freq&, data_of_rigth_freq&, data_of_left_freq&);
+uint32_t get_best_level(data_of_rigth_freq&, data_of_left_freq&);
 uint32_t closest_freq(uint64_t);
-uint64_t find_power_level(uint64_t target_freq, float target_power, data_of_rigth_freq&, data_of_left_freq& );
+uint64_t find_power_level(uint64_t target_freq, float target_power);//, data_of_rigth_freq&, data_of_left_freq& );
 
 
 
