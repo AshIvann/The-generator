@@ -149,12 +149,9 @@ void second_set_freq(uint64_t fout)
     return;
 }
 
-
-
-
-
 freqs detect_index_of_side_freq(uint64_t target_freq )
 {
+  uint64_t min_diff = 0;
   freqs side_freq_index;
   if(target_freq < check_freq[0])
   {
@@ -163,10 +160,11 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
     return side_freq_index;
   }
   
-  side_freq_index.right_freq_index = side_freq_index.left_freq_index = closest_freq(target_freq);
+  side_freq_index.right_freq_index = side_freq_index.left_freq_index = closed_freq(target_freq);
 
-  if(min_diff == 0)                                                      
-    return side_freq_index;
+  // if(min_diff == 0)                                     //пока что с использованием min_diff из closed_freq
+  //   return side_freq_index;                              //чтобы работало нужно переменную min_diff сделать глобальной, 
+                                                            // но и-за этого получается ошибка, также нужно убрать объявление этой переменной в функции  
 
   if(target_freq < check_freq[side_freq_index.left_freq_index])
     side_freq_index.left_freq_index = side_freq_index.left_freq_index - 1;
@@ -177,68 +175,27 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
 }
 
 
-
-data_of_left_freq detect_best_left_level(uint64_t target_power, freqs &side_freq_index)
+uint32_t find_power_level(uint8_t target_power, uint64_t target_freq)
 {
-   data_of_left_freq st_left_freq;
+  freqs result = detect_index_of_side_freq(target_freq);
+  uint8_t best_pow_level = get_best_level(target_power, target_freq);
 
-  st_left_freq.best_left_power_diff = abs(target_power - pgm_read_float(&power_table[0][side_freq_index.left_freq_index]));
-     for(int level = 1; level <= power_level; level++ )
-    {
-      float current_dbm = pgm_read_float(&power_table[level][side_freq_index.left_freq_index]);                             //обращаюсь к другой структуре, как организовать?????
-      float diff = abs((target_power - current_dbm));
-      if(abs(diff) <= abs(st_left_freq.best_left_power_diff))
-      {
-        st_left_freq.best_left_power_diff = diff;
-        st_left_freq.best_left_level = level;
-      }
-    }
-  return  st_left_freq;
+  float out_min = power_table[best_pow_level][result.left_freq_index] * 1000;
+  float out_max = power_table[best_pow_level][result.right_freq_index] * 1000;
+  float after_map = map(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max) / 1000.0;
+
+  return after_map;
 }
 
 
-data_of_rigth_freq detect_best_right_level(uint64_t target_power, freqs &side_freq_index)
+uint64_t closed_freq(uint64_t target_freq)
 {
-   data_of_rigth_freq st_right_freq;
-
-
-  st_right_freq.best_right_power_diff = abs(target_power - pgm_read_float(&power_table[0][side_freq_index.right_freq_index]));
-     for(int level = 1; level <= power_level; level++ )
-    {
-      float current_dbm = pgm_read_float(&power_table[level][side_freq_index.right_freq_index]);
-      float diff = abs(target_power - current_dbm);
-      if(abs(diff) <= abs(st_right_freq.best_right_power_diff))
-      {
-        st_right_freq.best_right_power_diff = diff;
-        st_right_freq.best_right_level = level;
-      }
-    }
-    return st_right_freq;
-}
-
-//uint32_t get_best_level(float best_right_power_diff, float best_left_power_diff, data_of_rigth_freq &st_right_freq,  data_of_left_freq &st_left_freq)
-uint32_t get_best_level(data_of_rigth_freq &st_right_freq, data_of_left_freq &st_left_freq)
-{
-  uint64_t best_level;
-   if(st_right_freq.best_right_power_diff <= st_left_freq.best_left_power_diff)
-  {
-    
-     best_level = st_right_freq.best_right_level;
-  }
-  else
-  { 
-    best_level = st_left_freq.best_left_level;
-  }
-  return best_level;
-}
-
-uint32_t closest_freq(uint64_t target_freq)
-{
-  int closest_index = 0;
+  uint8_t closest_index = 0;
+  uint64_t min_diff;
   
   min_diff = abs((long long)(target_freq - check_freq[0]));
 
-  for(int i = 1; i < 33; i++)
+  for(int i = 1; i < 42; i++)                                                              
   {
     uint32_t current_freq = check_freq[i];
     uint32_t diff = abs((long long)(target_freq - current_freq)) ;
@@ -251,49 +208,78 @@ uint32_t closest_freq(uint64_t target_freq)
   return closest_index;
 }
 
-
-
-
-freqs side_freq_index;
-uint64_t find_power_level(uint64_t target_freq, float target_power)//, data_of_rigth_freq st_right_freq, data_of_left_freq &st_left_freq)
+uint32_t detect_best_left_level(uint64_t target_power, uint64_t target_freq)
 {
-  data_of_rigth_freq st_right_freq;
-  data_of_left_freq st_left_freq;
-  // side_freq_index.left = detect_index_of_side_freq(target_freq);                                 //используется для определения частот левой и парвой от необходимой                               
-  // data_of_left_freq data_of_left_freq = detect_best_left_level(target_power);
-  // data_of_rigth_freq data_of_rigth_freq = detect_best_right_level(target_power);
+  uint8_t best_left_level;
+  freqs result = detect_index_of_side_freq(target_freq);
+  float best_left_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.left_freq_index]));
+     for(int level = 1; level <= POWER_LEVEL; level++ )
+    {
+      float current_dbm = pgm_read_float(&power_table[level][result.left_freq_index]);                             //обращаюсь к другой структуре, как организовать?????
+      float diff = abs((target_power - current_dbm));
+      if(abs(diff) <= abs(best_left_power_diff))
+      {
+        best_left_power_diff = diff;
+        best_left_level = level;
+      }
+    }
+  return best_left_level;
+}
 
-  st_left_freq.best_left_level = (uint32_t)&detect_best_left_level(target_power, side_freq_index);
+uint32_t detect_best_right_level(uint64_t target_power, uint64_t target_freq)
+{
+  uint32_t best_right_level;
+  freqs result = detect_index_of_side_freq(target_freq);
+  float best_right_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.right_freq_index]));
+     for(int level = 1; level <= POWER_LEVEL; level++ )
+    {
+      float current_dbm = pgm_read_float(&power_table[level][result.right_freq_index]);
+      float diff = abs(target_power - current_dbm);
+      if(abs(diff) <= abs(best_right_power_diff))
+      {
+        best_right_power_diff = diff;
+        best_right_level = level;
+      }
+    }
+    return best_right_level;
+}
+
+uint8_t get_best_level(uint8_t target_power, uint64_t target_freq)
+{
+  uint8_t best_level;
+  uint8_t best_right_level = detect_best_right_level(target_power, target_freq);
+  uint8_t best_left_level = detect_best_left_level(target_power, target_freq);
+  float best_right_power_diff = rt_power_diff(target_power, target_freq);
+  float best_left_power_diff = lt_power_diff(target_power, target_freq);
+
+  if(best_right_power_diff <= best_left_power_diff)
+  {
+     best_level = best_right_level;
+  }
+  else
+  { 
+    best_level = best_left_level;
+  }
+  return best_level;
+}
 
 
+float rt_power_diff(uint8_t target_power, uint64_t target_freq)
+{
+  freqs result = detect_index_of_side_freq(target_freq);
+  uint32_t best_right_level = detect_best_right_level(target_power, result.right_freq_index);
 
-  uint64_t best_level = get_best_level(st_right_freq, st_left_freq);                     //выбор между уровнями на разных частотах 
+  float right_power_diff = abs(target_power - pgm_read_float(&power_table[best_right_level][result.right_freq_index]));
+  
+  return right_power_diff;
+}
 
-  uint32_t first_multiply = power_table[best_level][side_freq_index.left_freq_index] * 100;
-  uint32_t second_multiplay = power_table[best_level][side_freq_index.right_freq_index] * 100;
+float lt_power_diff(uint8_t target_power, uint64_t target_freq)
+{
+  freqs result = detect_index_of_side_freq(target_freq);
+  uint32_t best_left_level = detect_best_left_level(target_power, result.left_freq_index);
 
-  uint32_t after_map = map(target_freq, (uint64_t)check_freq[side_freq_index.left_freq_index], check_freq[side_freq_index.right_freq_index], first_multiply, second_multiplay) / 100;
-
-  //int i = after_map * 100;
-  tft.setCursor(0,200);
-  tft.fillRect(0,200,320,20,ST77XX_BLACK);
-  //tft.print(after_map);
-  // tft.print(best_left_level);
-  // tft.print(" ");
-  // tft.print(left_freq_index);
-  // tft.print(" ");
-  // tft.print(" ");
-  // tft.print(best_right_level);
-  // tft.print(" ");
-  // tft.print(right_freq_index);
-  // tft.print(" ");
-  // tft.print(after_map);
-  // tft.setTextColor(ST77XX_YELLOW);
-  // tft.print(best_level);
-  // tft.setTextColor(ST77XX_WHITE);
-  // tft.setCursor(110, 85);
-  // tft.fillRect(110, 85, 320,20,ST77XX_BLACK);
- // tft.print(after_map);
-
-  return after_map;
+  float left_power_diff = abs(target_power - pgm_read_float(&power_table[best_left_level][result.left_freq_index]));
+  
+  return left_power_diff;
 }

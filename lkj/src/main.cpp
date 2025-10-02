@@ -149,27 +149,27 @@ void loop()
     {
         if(enc1.isRight())       //увеличение на 1
         {
-        power_counter += power_increment;
-        if(power_counter >= 11)
-        {
-            power_counter = 11;                                                                   
-        }
-        power_print(power_counter);
-        set_out_power(find_power_level(freq_set_by_encoder, power_counter));//, st_right_freq, st_left_freq ));
+            power_counter += power_increment;
+            if(power_counter >= 11)
+            {
+                power_counter = 11;                                                                   
+            }
+            power_print(power_counter);
+            set_out_power(find_power_level(power_counter, freq_set_by_encoder));//, st_right_freq, st_left_freq ));
         }
 
         else if(enc1.isLeft())   //уменьшение на 1
         {
-        power_counter -= power_increment;
-        if(power_counter <= 0 ) 
-        { 
-            power_counter = 0;
-        }
-        power_print(power_counter);
-        set_out_power(find_power_level(freq_set_by_encoder, power_counter));//, st_right_freq, st_left_freq ));
+            power_counter -= power_increment;
+            if(power_counter <= 0 ) 
+            { 
+                power_counter = 0;
+            }
+            power_print(power_counter);
+            set_out_power(find_power_level(power_counter, freq_set_by_encoder));//, st_right_freq, st_left_freq ));
         }
     }
-  }
+}
 
 
 

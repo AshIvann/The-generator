@@ -68,13 +68,10 @@
 #define SPICLOCK  13//sck    
 #define CHIPSELECT 10//ss   
 
-
-
-
 extern int chdiv_reg;    //используется для получения значения, которое должно быть записано в регистр из массива reg_divider[]
 extern unsigned int reg_divider[18];
 //extern uint64_t best_level;
-extern uint64_t min_diff;
+// extern uint64_t min_diff;
 
 
 struct freqs 
@@ -82,25 +79,6 @@ struct freqs
     uint32_t left_freq_index;
     uint32_t right_freq_index;
 };
-// extern freqs side_freq_index;
-
-
-struct data_of_rigth_freq
-{
-    float best_right_level;
-    float best_right_power_diff;
-};
- //extern data_of_rigth_freq st_right_freq;                                                 //хотел так, но получаю ошибку в main
-
-struct data_of_left_freq
-{
-    float best_left_level;
-    float best_left_power_diff;
-};
- //extern data_of_left_freq st_left_freq;                                                   //хотел так, но получаю ошибку в main
-
-
-
 
 void set_generator();                                                     //устанавливает значения необходимых для работы регистров 
 void set_out_power(uint16_t);                                           //установка частоты 
@@ -108,9 +86,22 @@ void writeRegister(uint8_t, uint16_t);                       //передача 
 void second_set_freq(uint64_t);                                      //установка частоты до герца 
 char spi_transfer(volatile uint8_t);
 byte send_SPI_byte(uint8_t);
-uint32_t get_best_level(data_of_rigth_freq&, data_of_left_freq&);
+//uint32_t get_best_level(data_of_rigth_freq&, data_of_left_freq&);
 uint32_t closest_freq(uint64_t);
 uint64_t find_power_level(uint64_t target_freq, float target_power);//, data_of_rigth_freq&, data_of_left_freq& );
+uint64_t closed_freq(uint64_t target_freq);
+
+
+uint32_t find_power_level(uint8_t target_power, uint64_t target_freq);
+uint32_t detect_best_left_level(uint64_t target_power, uint64_t target_freq);
+uint32_t detect_best_right_level(uint64_t target_power, uint64_t target_freq);
+float lt_power_diff(uint8_t target_power, uint64_t target_freq);
+float rt_power_diff(uint8_t target_power, uint64_t target_freq);
+uint8_t get_best_level(uint8_t target_power, uint64_t target_freq);
+
+
+
+
 
 
 

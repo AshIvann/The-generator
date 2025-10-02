@@ -142,3 +142,12 @@ void power_print(uint32_t for_print)
   tft.print(for_print);
   tft.print(" Units");
 }
+
+
+
+
+
+
+
+
+
