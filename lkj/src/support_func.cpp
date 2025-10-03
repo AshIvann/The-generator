@@ -1,10 +1,6 @@
 #include "support_func.h"
 
-
-
-
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
-
 
 const byte ROWS = 4;   // Количество рядов 
 const byte COLS = 4;   // Количество строк 
@@ -23,8 +19,7 @@ byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 Encoder enc1(CLK, DT, SW, TYPE2);
-uint64_t freq_set_by_encoder = 25e6;
-
+uint64_t freq_set_by_encoder = freq;
 
 
 uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) 
@@ -55,24 +50,25 @@ uint8_t find_chdiv(uint64_t fout)
 
 uint32_t get_fractional_part(float number)          //отделяет цифру после запятой
 {
-    int integer_part = (int)floor(number); // Целая часть
-    float fractional_part = number - integer_part + 0.01; // Дробная часть
-    int fractional_digits = (int)(fractional_part * 10); // Умножаем на 100, чтобы получить 1
-    return fractional_digits;
+  int integer_part = (int)floor(number); // Целая часть
+  float fractional_part = number - integer_part + 0.01; // Дробная часть
+  int fractional_digits = (int)(fractional_part * 10); // Умножаем на 100, чтобы получить 1
+  return fractional_digits;
 }
 
 uint16_t low_16bit(uint32_t value) 
 {
-    // Младшая 16-битная часть
-    uint16_t low  = (uint16_t)(value & 0xFFFF);
-    return low; 
+  // Младшая 16-битная часть
+  uint16_t low  = (uint16_t)(value & 0xFFFF);
+  return low; 
 }
+
 
 uint16_t high_16bit(uint32_t value) 
 {
-    // Старшая часть (в примере для 32-битного числа хватит одного сдвига)
-    uint16_t high = (uint16_t)((value >> 16) & 0xFFFF);    
-    return high;
+  // Старшая 16-битная часть
+  uint16_t high = (uint16_t)((value >> 16) & 0xFFFF);    
+  return high;
 }
 
 uint8_t get_number_of_characters(uint64_t number)     
@@ -88,23 +84,19 @@ void print_freq(uint64_t fr, uint8_t x ,uint8_t y)
   uint32_t last_six = fr % (uint32_t)1e6;
   
   tft.setCursor(x,y);
-  tft.fillRect(x, y, 320, 21, ST77XX_BLACK);
+  tft.fillRect(x, y, SCREEN_WIDTH, 21, ST77XX_BLACK);
   tft.print(first_five);
   tft.print(".");
-
-  uint8_t number_of_charaacters = get_number_of_characters(last_six);
-  for(int i = 0; i < 6 - number_of_charaacters; i++) 
+  uint8_t number_of_characters = get_number_of_characters(last_six);
+  for(int i = 0; i < 6 - number_of_characters; i++) 
   {
     tft.print(0);
   }
-
   tft.print(last_six);
   tft.print("MHz");
 }
 
-
-
-st_freq_params _get_divider_value(uint64_t fout)
+st_freq_params get_divider_value(uint64_t fout)
 {
   st_freq_params st;
   
@@ -117,7 +109,7 @@ st_freq_params _get_divider_value(uint64_t fout)
 
 uint32_t calculation_of_pll_n(uint64_t fout)
 {
-  st_freq_params st = _get_divider_value(fout);
+  st_freq_params st = get_divider_value(fout);
   
   uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / 10 + st.int_part_of_frac_div;   
 
@@ -126,11 +118,11 @@ uint32_t calculation_of_pll_n(uint64_t fout)
 
 uint32_t calculation_of_pll_num(uint64_t fout)      
 {
-  st_freq_params st = _get_divider_value(fout);                                                                                                                     //не знаю нужно ли это повторно писать, если эта функция идет следом за calculation_of_pll_n, где уже расчитывается эта переменная 
+  st_freq_params st = get_divider_value(fout);                                                                                                              
   
   uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv);
-  uint32_t frac_part_of_n_devider = (((float)st.first_five_of_freq * (float)st.chdiv) / 10.0) - ((st.first_five_of_freq * st.chdiv) / 10);
-  uint64_t frac_div = full_frac_div - (st.int_part_of_frac_div * 10e6) + (frac_part_of_n_devider * 10e6); 
+  uint32_t frac_part_of_n_div = (((float)st.first_five_of_freq * (float)st.chdiv) / 10.0) - ((st.first_five_of_freq * st.chdiv) / 10);
+  uint64_t frac_div = full_frac_div - (st.int_part_of_frac_div * 10e6) + (frac_part_of_n_div * 10e6); 
 
   return frac_div;
 }
@@ -142,12 +134,3 @@ void power_print(uint32_t for_print)
   tft.print(for_print);
   tft.print(" Units");
 }
-
-
-
-
-
-
-
-
-

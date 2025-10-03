@@ -3,13 +3,11 @@
 #include "power_table.h"
 
 
-
 uint64_t frq_set_by_encoder = 25e6;
 
 unsigned int reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
-
 int chdiv_reg = 0;
-
+uint64_t min_diff = 0;
 
 void set_out_power(uint16_t power)
 {
@@ -32,15 +30,11 @@ void writeRegister(uint8_t addr, uint16_t data)
 
   uint8_t* bytes = (uint8_t*)&packet;
 
-  //digitalWrite(CS, LOW);
-
   digitalWrite(CHIPSELECT,LOW);
   send_SPI_byte(bytes[0]);
   send_SPI_byte(bytes[2]);
   send_SPI_byte(bytes[1]);
-  digitalWrite(CHIPSELECT,HIGH); //release chip, signal end transfer
-
- // digitalWrite(CS, HIGH);
+  digitalWrite(CHIPSELECT,HIGH);  //release chip, signal end transfer
 }
 
 char spi_transfer(volatile uint8_t data)
@@ -60,16 +54,19 @@ byte send_SPI_byte(uint8_t val1)
    return data_byte;
  }
 
-void set_generator()
+void set_generator(uint64_t fout, uint8_t power)
 {
-  //выдает 25 МГц                        
+  uint64_t pll_n = calculation_of_pll_n(fout);
+  uint64_t fractional_divider = calculation_of_pll_num(fout);                   
+  chdiv_reg = reg_divider[find_chdiv(fout)];
+
   // Program RESET = 1 to reset registers
   writeRegister(R0, 0b0010010000011110);
   //Program RESET = 0 to remove reset
   writeRegister(R0, 0b0010010000011100);
 
   writeRegister(R78, 0x0003);
-  writeRegister(R75, 0x0BC0);       //channel divider = 384
+  writeRegister(R75, chdiv_reg);   
   writeRegister(R74, 0x0000);
   writeRegister(R73, 0x003F);
   writeRegister(R72, 0x0001);
@@ -82,15 +79,15 @@ void set_generator()
   //writeRegister(R45, 0b1101000011011110);   //No output power boost
   writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
   //writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
-  set_out_power(5);
-  writeRegister(R43, 0x0000);
-  writeRegister(R42, 0x0000);
+  set_out_power(power);
+  writeRegister(R43, low_16bit(fractional_divider));
+  writeRegister(R42, high_16bit(fractional_divider));
   writeRegister(R41, 0x0000);
   writeRegister(R40, 0x0000);
   writeRegister(R39, 0x9680);
   writeRegister(R38, 0x0098);
   writeRegister(R37, 0x0304);
-  writeRegister(R36, 960);                  //N dIVEDER
+  writeRegister(R36, pll_n);
   writeRegister(R34, 0x0000);
   writeRegister(R31, 0x43EC);
   writeRegister(R27, 0x0002);
@@ -106,12 +103,11 @@ void set_generator()
   writeRegister(R8,  0x2000);
   writeRegister(R7,  0x40B2);
   writeRegister(R1,  0x0808);
-  writeRegister(R0, 0b0010010000011100);            
+  writeRegister(R0,  0b0010010000011100);            
 }
 
-void second_set_freq(uint64_t fout)
+void set_freq(uint64_t fout)
 {
-
   if(fout < 19e9 && fout > 15e9)   //VCO doubler
   {
     //VCO doubler 
@@ -125,7 +121,7 @@ void second_set_freq(uint64_t fout)
     //VCO
     writeRegister(R46, 0b0000011111111101);   //переключил выход B на VCO
     writeRegister(R45, 0b1100100011011110);   //переключил выход A на VCO
-    writeRegister(R27, 0b0000000000000010);   //включил VCO2X_EN    
+    writeRegister(R27, 0b0000000000000010);   //выключил VCO2X_EN    
     return;
   }
 
@@ -139,8 +135,7 @@ void second_set_freq(uint64_t fout)
     uint64_t pll_n = calculation_of_pll_n(fout);
     uint64_t fractional_divider = calculation_of_pll_num(fout);
     
-    writeRegister(R75, chdiv_reg);   
-
+    writeRegister(R75, chdiv_reg);                                                            //проверить все ли нормально для частот >7500
     writeRegister(R36, pll_n);
     writeRegister(R43, low_16bit(fractional_divider));
     writeRegister(R42, high_16bit(fractional_divider));
@@ -151,9 +146,8 @@ void second_set_freq(uint64_t fout)
 
 freqs detect_index_of_side_freq(uint64_t target_freq )
 {
-  uint64_t min_diff = 0;
   freqs side_freq_index;
-  if(target_freq < check_freq[0])
+  if(target_freq <= check_freq[0])
   {
     side_freq_index.left_freq_index = 0;
     side_freq_index.right_freq_index = 0;
@@ -162,10 +156,8 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
   
   side_freq_index.right_freq_index = side_freq_index.left_freq_index = closed_freq(target_freq);
 
-  // if(min_diff == 0)                                     //пока что с использованием min_diff из closed_freq
-  //   return side_freq_index;                              //чтобы работало нужно переменную min_diff сделать глобальной, 
-                                                            // но и-за этого получается ошибка, также нужно убрать объявление этой переменной в функции  
-
+  if(min_diff == 0)                                     //проверить частоту попадающую ровно в частоты таблицы
+    return side_freq_index;                               
   if(target_freq < check_freq[side_freq_index.left_freq_index])
     side_freq_index.left_freq_index = side_freq_index.left_freq_index - 1;
   else
@@ -174,8 +166,7 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
   return side_freq_index;
 }
 
-
-uint32_t find_power_level(uint8_t target_power, uint64_t target_freq)
+float find_power_level(uint8_t target_power, uint64_t target_freq)
 {
   freqs result = detect_index_of_side_freq(target_freq);
   uint8_t best_pow_level = get_best_level(target_power, target_freq);
@@ -187,18 +178,17 @@ uint32_t find_power_level(uint8_t target_power, uint64_t target_freq)
   return after_map;
 }
 
-
-uint64_t closed_freq(uint64_t target_freq)
+uint8_t closed_freq(uint64_t target_freq)
 {
   uint8_t closest_index = 0;
-  uint64_t min_diff;
+  //uint64_t min_diff;
   
-  min_diff = abs((long long)(target_freq - check_freq[0]));
+  min_diff = abs((target_freq - check_freq[0]));
 
-  for(int i = 1; i < 42; i++)                                                              
+  for(uint8_t i = 1; i < 42; i++)                                                              
   {
-    uint32_t current_freq = check_freq[i];
-    uint32_t diff = abs((long long)(target_freq - current_freq)) ;
+    uint64_t current_freq = check_freq[i];
+    uint64_t diff = abs(target_freq - current_freq) ;
     if(diff < min_diff)                 
     {
       min_diff = diff;
@@ -208,40 +198,40 @@ uint64_t closed_freq(uint64_t target_freq)
   return closest_index;
 }
 
-uint32_t detect_best_left_level(uint64_t target_power, uint64_t target_freq)
+uint8_t detect_best_left_level(uint8_t target_power, uint64_t target_freq)
 {
   uint8_t best_left_level;
   freqs result = detect_index_of_side_freq(target_freq);
   float best_left_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.left_freq_index]));
-     for(int level = 1; level <= POWER_LEVEL; level++ )
+  for(uint8_t level = 1; level <= POWER_LEVEL; level++ )
+  {
+    float current_dbm = pgm_read_float(&power_table[level][result.left_freq_index]);                             
+    float diff = abs((target_power - current_dbm));
+    if(abs(diff) <= abs(best_left_power_diff))
     {
-      float current_dbm = pgm_read_float(&power_table[level][result.left_freq_index]);                             //обращаюсь к другой структуре, как организовать?????
-      float diff = abs((target_power - current_dbm));
-      if(abs(diff) <= abs(best_left_power_diff))
-      {
-        best_left_power_diff = diff;
-        best_left_level = level;
-      }
+      best_left_power_diff = diff;
+      best_left_level = level;
     }
+  }
   return best_left_level;
 }
 
-uint32_t detect_best_right_level(uint64_t target_power, uint64_t target_freq)
+uint8_t detect_best_right_level(uint8_t target_power, uint64_t target_freq)
 {
   uint32_t best_right_level;
   freqs result = detect_index_of_side_freq(target_freq);
   float best_right_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.right_freq_index]));
-     for(int level = 1; level <= POWER_LEVEL; level++ )
+  for(uint8_t level = 1; level <= POWER_LEVEL; level++ )
+  {
+    float current_dbm = pgm_read_float(&power_table[level][result.right_freq_index]);
+    float diff = abs(target_power - current_dbm);
+    if(abs(diff) <= abs(best_right_power_diff))
     {
-      float current_dbm = pgm_read_float(&power_table[level][result.right_freq_index]);
-      float diff = abs(target_power - current_dbm);
-      if(abs(diff) <= abs(best_right_power_diff))
-      {
-        best_right_power_diff = diff;
-        best_right_level = level;
-      }
+      best_right_power_diff = diff;
+      best_right_level = level;
     }
-    return best_right_level;
+  }
+  return best_right_level;
 }
 
 uint8_t get_best_level(uint8_t target_power, uint64_t target_freq)
@@ -254,7 +244,7 @@ uint8_t get_best_level(uint8_t target_power, uint64_t target_freq)
 
   if(best_right_power_diff <= best_left_power_diff)
   {
-     best_level = best_right_level;
+    best_level = best_right_level;
   }
   else
   { 
@@ -262,7 +252,6 @@ uint8_t get_best_level(uint8_t target_power, uint64_t target_freq)
   }
   return best_level;
 }
-
 
 float rt_power_diff(uint8_t target_power, uint64_t target_freq)
 {
