@@ -14,15 +14,17 @@
 uint8_t power_counter = 5;
 uint64_t click_counter = 1;
 
-uint64_t freq = 75;          //частота которая вызывается в setup
-uint64_t power = 5;
+uint64_t freq = 75000000;          //частота которая вызывается в setup
+uint64_t freq_set_by_encoder = freq;
+uint64_t freq_set_by_key;  
 
+uint64_t power = 5;
 uint32_t freq_increment = 1;      
 uint8_t power_increment = 1;         
 
-uint64_t freq_set_by_key;  
 
- 
+
+
 void setup() 
 {
     tft.init(240, 320);
@@ -44,15 +46,20 @@ void setup()
 
     print_freq(freq_set_by_encoder, 100, 30);
 
+    Serial.begin(9600);
+    
+
     enc1.setTickMode(TYPE2);
-    set_generator(freq, power);                                          
+    set_generator(freq, power); 
+
+    
+    Serial.print(find_power_level(2, 23000000));
 }
 
 void loop()
 {
     enc1.tick(); 
     char key = keypad.getKey();
-
     if (key)
     {
         if(key >= '0' && key <= '9')
@@ -143,6 +150,11 @@ void loop()
             {
                 power_counter = 11;                                                                   
             }
+            power_print(power_counter);
+
+            tft.setCursor(0,150);
+            tft.fillRect(0, 150, SCREEN_WIDTH, 21, ST77XX_BLACK);
+            tft.print(power_counter);
             power_print(find_power_level(power_counter, freq_set_by_encoder));
         }
 
@@ -153,6 +165,10 @@ void loop()
             { 
                 power_counter = 0;
             }
+            power_print(power_counter);
+            tft.setCursor(0,150);
+            tft.fillRect(0, 150, SCREEN_WIDTH, 21, ST77XX_BLACK);
+            tft.print(power_counter);
             power_print(find_power_level(power_counter, freq_set_by_encoder));
         }
     }

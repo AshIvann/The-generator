@@ -1,5 +1,6 @@
 #include "support_func.h"
 
+
 unsigned int divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
 
 const byte ROWS = 4;   // Количество рядов 
@@ -19,7 +20,7 @@ byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 Encoder enc1(CLK, DT, SW, TYPE2);
-uint64_t freq_set_by_encoder = freq;
+
 
 
 uint16_t replace_bits_8_to_13(uint16_t original, uint8_t new_bits) 
@@ -39,7 +40,9 @@ uint8_t find_chdiv(uint64_t fout)
 {
   for(int N = 0; N <= 17; N++)
   {
-    uint64_t left = 7500 * 1e6 / divider_values[N];
+    // uint64_t left = 7500 * 1e6 / divider_values[N];
+    uint64_t left = 7500;
+
     if(fout >= left) 
     {
       return N;
@@ -93,7 +96,7 @@ void print_freq(uint64_t fr, uint8_t x ,uint8_t y)
     tft.print(0);
   }
   tft.print(last_six);
-  tft.print("MHz");
+  tft.print(" MHz");
 }
 
 st_freq_params get_divider_value(uint64_t fout)

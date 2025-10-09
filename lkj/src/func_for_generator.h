@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include "stdint.h"
 
@@ -82,7 +84,6 @@ void set_generator(uint64_t, uint8_t);
 void set_out_power(uint16_t);                                   
 void writeRegister(uint8_t, uint16_t);                           
 void set_freq(uint64_t);                                        
-char spi_transfer(volatile uint8_t);
 byte send_SPI_byte(uint8_t);
 uint8_t closed_freq(uint64_t);
 float find_power_level(uint8_t, uint64_t);
@@ -91,3 +92,4 @@ uint8_t detect_best_right_level(uint8_t, uint64_t);
 float lt_power_diff(uint8_t, uint64_t);
 float rt_power_diff(uint8_t, uint64_t);
 uint8_t get_best_level(uint8_t,  uint64_t);
+template <typename T> T my_map(T, T, T, T, T);

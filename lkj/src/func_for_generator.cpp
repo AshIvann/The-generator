@@ -1,7 +1,7 @@
 #include "func_for_generator.h"
 #include "support_func.h"
 #include "power_table.h"
-
+#include "ard_nano.h"
 
 uint64_t frq_set_by_encoder = 25e6;
 
@@ -35,16 +35,6 @@ void writeRegister(uint8_t addr, uint16_t data)
   send_SPI_byte(bytes[2]);
   send_SPI_byte(bytes[1]);
   digitalWrite(CHIPSELECT,HIGH);  //release chip, signal end transfer
-}
-
-char spi_transfer(volatile uint8_t data)
-{
-  SPDR = data;                    // Start the transmission
-
-  while (!(SPSR & (1<<SPIF)))     // Wait the end of the transmission
-  {};
-
-  return SPDR;                    // return the received byte
 }
 
 byte send_SPI_byte(uint8_t val1)
@@ -166,29 +156,63 @@ freqs detect_index_of_side_freq(uint64_t target_freq )
   return side_freq_index;
 }
 
-float find_power_level(uint8_t target_power, uint64_t target_freq)
+float find_power_level(uint8_t target_power, uint64_t target_freq )
 {
   freqs result = detect_index_of_side_freq(target_freq);
   uint8_t best_pow_level = get_best_level(target_power, target_freq);
+  
+  /*
+  Serial.print("best_pow_level = ");
+  Serial.println(best_pow_level);
+  
+  Serial.print("out_min = ");
+  Serial.println(pgm_read_float(&power_table[best_pow_level][result.left_freq_index]));
+  
+  Serial.print("out_max = ");
+  Serial.println(pgm_read_float(&power_table[best_pow_level][result.right_freq_index]));
 
-  float out_min = power_table[best_pow_level][result.left_freq_index] * 1000;
-  float out_max = power_table[best_pow_level][result.right_freq_index] * 1000;
-  float after_map = map(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max) / 1000.0;
+  Serial.print("lt_freq ");
+  Serial.println((uint32_t)check_freq[result.left_freq_index] / 10000);
+  
+  Serial.print("rt_freq ");
+  Serial.println((uint32_t)check_freq[result.right_freq_index] / 10000);
+*/
 
-  return after_map;
+  if(check_freq[result.right_freq_index] == check_freq[result.left_freq_index])
+  {
+    Serial.print("best_pow = ");
+    Serial.println(pgm_read_float(&power_table[best_pow_level][result.left_freq_index]), 4);
+    return pgm_read_float(&power_table[best_pow_level][result.left_freq_index]);
+  }
+  else
+  {
+    float out_min = pgm_read_float(&power_table[best_pow_level][result.left_freq_index]);
+    float out_max = pgm_read_float(&power_table[best_pow_level][result.right_freq_index]);
+
+    float after_my_map = my_map<float>(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max);
+    Serial.print("after_my_map = ");
+    Serial.println(after_my_map, 4);
+    return after_my_map;
+  }
+}
+
+template <typename T> T my_map(T x, T in_min, T in_max, T out_min, T out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 uint8_t closed_freq(uint64_t target_freq)
 {
   uint8_t closest_index = 0;
-  //uint64_t min_diff;
-  
-  min_diff = abs((target_freq - check_freq[0]));
+  //min_diff = abs(1. * (target_freq - check_freq[0]));   //для stm 
+  min_diff = abs((target_freq - check_freq[0]));          //для arduino
 
   for(uint8_t i = 1; i < 42; i++)                                                              
   {
     uint64_t current_freq = check_freq[i];
-    uint64_t diff = abs(target_freq - current_freq) ;
+    uint64_t diff = abs((target_freq - current_freq)) ;             //для arduino
+    // uint64_t diff = abs(1. * (target_freq - current_freq)) ;     //для stm    
+  
     if(diff < min_diff)                 
     {
       min_diff = diff;

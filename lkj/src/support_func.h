@@ -1,9 +1,13 @@
+#pragma once
+
 #include <Arduino.h>
 #include "stdint.h"
 #include <Adafruit_ST7789.h>  // Hardware-specific library for ST7789
 #include "GyverEncoder.h"
 #include "Keypad.h"
 #include <math.h>
+
+// #include "support_func.cpp"
 
 //Пины для дислпея 
 #define TFT_DC   8     //datacomand 
