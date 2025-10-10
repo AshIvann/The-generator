@@ -1,30 +1,30 @@
+
 #include <Arduino.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7789.h>
 #include <math.h>
 #include "stdint.h"
-#include "GyverEncoder.h"
-#include "Keypad.h"
 #include "Print.h"
 
-#include "func_for_generator.h"
-#include "support_func.h"
-
+#include "Encoder_Keypad.h"                 //нужно убрать из этого файла то, что осталось, однако получаю ошибку
+#include "LMX2595.h"
+#include "Display.h"
+#include "Encoder.h"
 
 uint8_t power_counter = 5;
-uint64_t click_counter = 1;
+// uint64_t click_counter = 1;
 
 uint64_t freq = 75000000;          //частота которая вызывается в setup
-uint64_t freq_set_by_encoder = freq;
+uint64_t freq_set_by_encoder = freq;               //Зачем нужна эта трока, если эта переменная объявлена в Encoder.h и даже как public
 uint64_t freq_set_by_key;  
 
 uint64_t power = 5;
-uint32_t freq_increment = 1;      
+// uint32_t freq_increment = 1;      
 uint8_t power_increment = 1;         
 
 
-
-
+LMX2595 gen;
+Display dis;
+My_encoder my_enc;
+My_keybord my_key;
 void setup() 
 {
     tft.init(240, 320);
@@ -44,16 +44,10 @@ void setup()
     tft.print(power_counter);
     tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
 
-    print_freq(freq_set_by_encoder, 100, 30);
-
-    Serial.begin(9600);
-    
+    dis.print_freq(freq_set_by_encoder, 100, 30);
 
     enc1.setTickMode(TYPE2);
-    set_generator(freq, power); 
-
-    
-    Serial.print(find_power_level(2, 23000000));
+    gen.set_generator(freq, power); 
 }
 
 void loop()
@@ -62,114 +56,21 @@ void loop()
     char key = keypad.getKey();
     if (key)
     {
-        if(key >= '0' && key <= '9')
-        {
-            freq_set_by_key = (freq_set_by_key * 10) + (key - 48);
-            print_freq(freq_set_by_key, 0, 150);                                       //Изменил строку, проверить что будет выведенно 
-        }
-
-        else if(key == 'A')
-        {
-            tft.setCursor(100,30);
-            tft.fillRect(100, 30, SCREEN_WIDTH, 21, ST77XX_BLACK);
-            if(freq_set_by_key < 12e6)
-            {
-                freq_set_by_key = 12e6;
-                tft.print("12.000000 MHz");
-            }
-            else if(freq_set_by_key >= 19e9)
-            {
-                freq_set_by_key = 19e9;
-                tft.print("19000.000000 MHz");
-            }
-            print_freq(freq_set_by_key, 100, 30);
-            set_freq(freq_set_by_key);
-            freq_set_by_encoder = freq_set_by_key;
-            freq_set_by_key = 0;             
-        }
-    
-        else if(key == 'D')
-        {
-            freq_set_by_key = freq_set_by_key / 10;
-            print_freq(freq_set_by_key, 0, 150);
-        }
+        my_key.scan_key(key);                                                   //нужно проверить 
+        freq_set_by_encoder = freq_set_by_key;
     }
 
-    if(enc1.isClick())
+    if(my_enc.click())      //изменение частоты                                 //нужно проверить 
     {
-        click_counter = click_counter + 1;
-        if(click_counter % 2 == 1)
-        {
-            tft.setCursor(10, 30);
-            tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
-            tft.setTextColor(ST77XX_WHITE);
-            tft.print("Freq: ");
-            tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
-        }
-        else
-        {
-            tft.setCursor(10, 85);
-            tft.fillRect(8, 106, 265, 2, ST77XX_BLUE);
-            tft.setTextColor(ST77XX_WHITE);
-            tft.print("Power: ");
-            tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
-        }
-    }    
-    
-    if(click_counter % 2 == 1)      //изменение частоты 
-    {
-        if(enc1.isRight())
-        {
-            freq_set_by_encoder += freq_increment;
-            if(freq_set_by_encoder >= 19e9) 
-            {
-                freq_set_by_encoder = 19e9;
-            }
-            print_freq(freq_set_by_encoder, 100, 30);
-            set_freq(freq_set_by_encoder);
-        }
-
-        if(enc1.isLeft())
-        {
-            freq_set_by_encoder -= freq_increment;
-            if(freq_set_by_encoder <= 12e6 )
-            {
-                freq_set_by_encoder = 12e6;
-            }
-            print_freq(freq_set_by_encoder, 100, 30);
-            set_freq(freq_set_by_encoder);
-        }
+        tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
+        tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
+        my_enc.update_freq();
     }
   
     else                            //изменение мощности 
     {
-        if(enc1.isRight())       //увеличение на 1
-        {
-            power_counter += power_increment;
-            if(power_counter >= 11)
-            {
-                power_counter = 11;                                                                   
-            }
-            power_print(power_counter);
-
-            tft.setCursor(0,150);
-            tft.fillRect(0, 150, SCREEN_WIDTH, 21, ST77XX_BLACK);
-            tft.print(power_counter);
-            power_print(find_power_level(power_counter, freq_set_by_encoder));
-        }
-
-        else if(enc1.isLeft())   //уменьшение на 1
-        {
-            power_counter -= power_increment;
-            if(power_counter <= 0 ) 
-            { 
-                power_counter = 0;
-            }
-            power_print(power_counter);
-            tft.setCursor(0,150);
-            tft.fillRect(0, 150, SCREEN_WIDTH, 21, ST77XX_BLACK);
-            tft.print(power_counter);
-            power_print(find_power_level(power_counter, freq_set_by_encoder));
-        }
+        tft.fillRect(8, 106, 265, 2, ST77XX_BLUE);
+        tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
+        my_enc.update_power();
     }
 }
