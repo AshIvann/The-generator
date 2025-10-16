@@ -19,7 +19,7 @@ void Display::print_freq(uint64_t fr, uint8_t x ,uint8_t y)
     tft.print(0);
   }
   tft.print(last_six);
-  tft.print(" MHz");
+  tft.print("MHz");
 }
 
 void Display::power_print(uint32_t for_print)
@@ -46,7 +46,7 @@ uint8_t Display::get_number_of_characters(uint64_t number)
 
 
 
-float Display::find_power_level(uint8_t target_power, uint64_t target_freq )
+uint16_t Display::find_power_level(uint8_t target_power, uint64_t target_freq )
 {
   freqs result = detect_index_of_side_freq(target_freq);
   best_pow_level = get_best_level(target_power, target_freq);
@@ -63,9 +63,10 @@ float Display::find_power_level(uint8_t target_power, uint64_t target_freq )
     float out_max = pgm_read_float(&power_table[best_pow_level][result.right_freq_index]);
 
     float after_my_map = my_map(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max);
+    uint16_t final = after_my_map * 100;
     Serial.print("after_my_map = ");
     Serial.println(after_my_map, 4);
-    return after_my_map;
+    return final;
   }
 }
 

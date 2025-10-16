@@ -3,8 +3,8 @@
 // Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 Encoder enc1(CLK, DT, SW, TYPE2);
 
-void My_encoder:: update_freq()
-{
+ void My_encoder:: update_freq()
+ {
     Display dis;
     LMX2595 gen;
     //enc1.tick(); 
@@ -34,7 +34,7 @@ void My_encoder:: update_freq()
         dis.print_freq(freq_set_by_encoder, 100, 30);  
         gen.set_freq(freq_set_by_encoder);
     }
-}
+ }
 
 void My_encoder:: update_power()
 {
@@ -54,7 +54,7 @@ void My_encoder:: update_power()
     }
     if(enc1.isLeft())
     {
-        power_counter += power_increment;
+        power_counter -= power_increment;
             if(power_counter <= 0) 
             {
                 power_counter = 0;
@@ -65,11 +65,17 @@ void My_encoder:: update_power()
     {
         // uint8_t best_pow_level = get_best_level(power_counter, freq_set_by_encoder);
         // dis.power_print(dis.find_power_level(power_counter, freq_set_by_encoder));
+        tft.setCursor(0, 150);
+        tft.fillRect(0, 150, SCREEN_WIDTH, 20, ST77XX_BLACK);
+        tft.print(power_counter);
+        dis.power_print(dis.find_power_level(power_counter, 75000000));
         // gen.set_out_power(best_pow_level);           //нужен не power_counter, а best
     }
 }
 
-bool My_encoder:: click()
+
+
+boolean My_encoder:: click()
 {
     //enc1.tick(); 
     if(enc1.isClick())
@@ -113,4 +119,5 @@ void My_keybord::scan_key(uint8_t key)
         freq_set_by_key = freq_set_by_key / 10;
         dis.print_freq(freq_set_by_key, 0, 150);
     }
+    // freq_set_by_encoder = freq_set_by_key;
 }

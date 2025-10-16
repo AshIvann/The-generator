@@ -48,7 +48,13 @@ void setup()
 
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq, power); 
+
+    tft.setCursor(0,240);
+    float srlgh = 5.5;
+    tft.print(srlgh);
 }
+
+// uint8_t freq_increment= 1; 
 
 void loop()
 {
@@ -57,7 +63,7 @@ void loop()
     if (key)
     {
         my_key.scan_key(key);                                                   //нужно проверить 
-        freq_set_by_encoder = freq_set_by_key;
+        // freq_set_by_encoder = freq_set_by_key;
     }
 
     if(my_enc.click())      //изменение частоты                                 //нужно проверить 
@@ -66,7 +72,6 @@ void loop()
         tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
         my_enc.update_freq();
     }
-  
     else                            //изменение мощности 
     {
         tft.fillRect(8, 106, 265, 2, ST77XX_BLUE);

@@ -15,21 +15,25 @@ class My_encoder //: public Display, public LMX2595
     public:
         void update_freq(void);
         void update_power(void);
-        bool click(void);
+        boolean click(void);
 
-        uint64_t freq_set_by_encoder;
+        
         bool click_changed = true;
         
+        uint64_t freq_set_by_encoder = 75000000;
 
-    private:
-        uint8_t freq_increment, power_increment = 1;  
-        uint8_t power_counter = 5;
+    
+        uint8_t freq_increment = 1;
+
+        uint8_t power_increment = 1;  
+        int power_counter = 5;
         
 };
 
-class My_keybord : public LMX2595, public Display
+class My_keybord //: public LMX2595, public Display
 {
     public:
         void scan_key(uint8_t);
         uint64_t freq_set_by_key;
+
 };

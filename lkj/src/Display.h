@@ -19,7 +19,7 @@ class Display
     public:
         void print_freq(uint64_t, uint8_t, uint8_t);
         void power_print(uint32_t);
-        float find_power_level(uint8_t, uint64_t);
+        uint16_t find_power_level(uint8_t, uint64_t);
     
     protected:
         uint8_t get_best_level(uint8_t,  uint64_t);
