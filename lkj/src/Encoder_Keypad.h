@@ -1,5 +1,5 @@
 #include "GyverEncoder.h"
-#include "Keypad.h"
+// #include "Keypad.h"
 
 // //Для энкодера 
 // #define CLK 2
@@ -7,7 +7,7 @@
 // #define SW 4
 
 // extern Encoder enc1;
-extern Keypad keypad ;
+// extern Keypad keypad ;
 
 
 // extern uint64_t freq_set_by_encoder;            
@@ -28,5 +28,5 @@ byte rowPins[ROWS] = {A3, A2, A1, A0}; // Выводы, подключение �
 byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к столбцам  
 
 // Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+// Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 // Encoder enc1(CLK, DT, SW, TYPE2);

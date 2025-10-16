@@ -4,31 +4,35 @@
 #include "stdint.h"
 #include "Print.h"
 
-#include "Encoder_Keypad.h"                 //нужно убрать из этого файла то, что осталось, однако получаю ошибку
-#include "LMX2595.h"
-#include "Display.h"
+#include "Encoder_Keypad.h"                 //нужно убрать из этого файла то, что осталось, сейчас получаю ошибку
+// #include "LMX2595.h"
+// #include "Display.h"
 #include "Encoder.h"
 
-uint8_t power_counter = 5;
-// uint64_t click_counter = 1;
+// uint64_t freq = 425000000;          //частота которая вызывается в setup
 
-uint64_t freq = 75000000;          //частота которая вызывается в setup
-uint64_t freq_set_by_encoder = freq;               //Зачем нужна эта трока, если эта переменная объявлена в Encoder.h и даже как public
-uint64_t freq_set_by_key;  
 
-uint64_t power = 5;
-// uint32_t freq_increment = 1;      
-uint8_t power_increment = 1;         
+// uint64_t freq_set_by_encoder = freq;               
+// uint64_t freq_set_by_key;  
+
+
+// uint32_t freq_increment = 1;  
+
+//  uint8_t power_counter = 5;
+// uint8_t power_increment = 1;             если перестанет измняться мощность, то раскомментировать       
 
 
 LMX2595 gen;
-Display dis;
+// Display dis;
 My_encoder my_enc;
 My_keybord my_key;
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+
 void setup() 
 {
     tft.init(240, 320);
-    tft.fillScreen(ST77XX_BLACK);    
+    tft.fillScreen(ST77XX_BLACK);   
     tft.setTextColor(ST77XX_WHITE);
     tft.setRotation(1);
     tft.setTextSize(3);
@@ -38,23 +42,16 @@ void setup()
                                       
     tft.print("Freq: ");
     tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
-
+    // dis.print_freq(my_enc.freq_set_by_encoder, 100, 30);
+    
     tft.setCursor(10, 85);                          
     tft.print("Power: ");
-    tft.print(power_counter);
+    tft.print(my_enc.power_counter);
     tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
 
-    dis.print_freq(freq_set_by_encoder, 100, 30);
-
     enc1.setTickMode(TYPE2);
-    gen.set_generator(freq, power); 
-
-    tft.setCursor(0,240);
-    float srlgh = 5.5;
-    tft.print(srlgh);
+    gen.set_generator(425000000, my_enc.power_counter); 
 }
-
-// uint8_t freq_increment= 1; 
 
 void loop()
 {
@@ -62,11 +59,10 @@ void loop()
     char key = keypad.getKey();
     if (key)
     {
-        my_key.scan_key(key);                                                   //нужно проверить 
-        // freq_set_by_encoder = freq_set_by_key;
+        my_key.scan_key(key);                                               
+        my_enc.freq_set_by_encoder = my_key.get_rem();
     }
-
-    if(my_enc.click())      //изменение частоты                                 //нужно проверить 
+    if(my_enc.click())              //изменение частоты                                 
     {
         tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
         tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);

@@ -1,9 +1,5 @@
 #include "LMX2595.h"
 
-
-uint16_t divider_values[18] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 72, 96, 128, 192, 256, 384, 512, 768};
-uint16_t reg_divider[18]  = {0b0000100000000000, 0b0000100001000000, 0b0000100010000000, 0b0000100011000000, 0b0000100100000000, 0b0000100101000000, 0b0000100110000000, 0b0000100111000000, 0b0000101000000000, 0b0000101001000000, 0b0000101010000000, 0b0000101011000000, 0b0000101100000000, 0b0000101101000000, 0b0000101110000000, 0b0000101111000000, 0b0000110000000000, 0b0000110001000000};
-
 void LMX2595::set_freq(uint64_t fout)
 {
     
@@ -25,22 +21,21 @@ void LMX2595::set_freq(uint64_t fout)
   }
 
   // else        //<7500
-    writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
-    writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
-    writeRegister(R31, 0b0100001111101100);   //включил CHDIV
+  writeRegister(R46, 0b0000011111111100);   //переключил выход B на Channel Divider
+  writeRegister(R45, 0b1100000011011110);   //переключил выход A на Channel Divider
+  writeRegister(R31, 0b0100001111101100);   //включил CHDIV
 
-    chdiv_reg = reg_divider[find_chdiv(fout)];
+  chdiv_reg = reg_divider[find_chdiv(fout)];
 
-    uint64_t pll_n = calculation_of_pll_n(fout);
-    uint64_t fractional_divider = calculation_of_pll_num(fout);
-    
-    writeRegister(R75, chdiv_reg);                                                            //проверить все ли нормально для частот >7500
-    writeRegister(R36, pll_n);
-    writeRegister(R43, low_16bit(fractional_divider));
-    writeRegister(R42, high_16bit(fractional_divider));
-
-    writeRegister(R0, 0b0010010000011100);
-    return;
+  uint64_t pll_n = calculation_of_pll_n(fout);
+  uint64_t fractional_divider = calculation_of_pll_num(fout);
+  
+  writeRegister(R75, chdiv_reg);                                                            //проверить все ли нормально для частот >7500
+  writeRegister(R36, pll_n);
+  writeRegister(R43, low_16bit(fractional_divider));
+  writeRegister(R42, high_16bit(fractional_divider));
+  writeRegister(R0, 0b0010010000011100);
+  return;
 }
 
 void LMX2595::writeRegister(uint8_t addr, uint16_t data)
@@ -67,11 +62,11 @@ void LMX2595::writeRegister(uint8_t addr, uint16_t data)
 }
 
 byte LMX2595::send_SPI_byte(uint8_t val1)
- {
-   uint8_t data_byte;
-   data_byte = spi_transfer(val1); //get data byte
-   return data_byte;
- }
+{
+  uint8_t data_byte;
+  data_byte = spi_transfer(val1); //get data byte
+  return data_byte;
+}
 
  char LMX2595::spi_transfer(volatile uint8_t data)
 {
@@ -140,8 +135,6 @@ LMX2595::st_freq_params LMX2595:: get_divider_value(uint64_t fout)
   st.int_part_of_frac_div = (st.last_six_of_freq * st.chdiv) / 10e6;
   return st;
 }
-
-
 
 void LMX2595::set_out_power(uint16_t power)
 {

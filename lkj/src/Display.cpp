@@ -1,12 +1,9 @@
 #include "Display.h"
 
-Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-uint64_t check_freq[CHECK_FREQ] = {25000000, 50000000, 75000000, 100000000, 150000000, 200000000, 250000000, 300000000, 400000000, 500000000, 600000000, 700000000, 800000000, 900000000, 1000000000, 1100000000, 1115000000, 1200000000, 1250000000, 1300000000, 1350000000, 1400000000, 1500000000, 1560000000, 1600000000, 1700000000, 1800000000, 1900000000, 2000000000, 2100000000, 2150000000, 2200000000, 2300000000, 2400000000, 2500000000, 2550000000, 2600000000, 2700000000, 2750000000, 2800000000, 2900000000};
-
-
 void Display::print_freq(uint64_t fr, uint8_t x ,uint8_t y)
 {
-  uint32_t first_five = fr / 1e6;
+  // uint32_t first_five = fr / (uint32_t)1e6;
+  uint32_t first_five = fr / (uint32_t)1e6;
   uint32_t last_six = fr % (uint32_t)1e6;
   
   tft.setCursor(x,y);
@@ -22,7 +19,7 @@ void Display::print_freq(uint64_t fr, uint8_t x ,uint8_t y)
   tft.print("MHz");
 }
 
-void Display::power_print(uint32_t for_print)
+void Display::power_print(float for_print)
 {
   tft.setCursor(110, 85);
   tft.fillRect(110, 85, SCREEN_WIDTH, 21, ST77XX_BLACK); 
@@ -46,15 +43,14 @@ uint8_t Display::get_number_of_characters(uint64_t number)
 
 
 
-uint16_t Display::find_power_level(uint8_t target_power, uint64_t target_freq )
+float Display::find_power_level(uint8_t target_power, uint64_t target_freq )
 {
   freqs result = detect_index_of_side_freq(target_freq);
   best_pow_level = get_best_level(target_power, target_freq);
   
   if(check_freq[result.right_freq_index] == check_freq[result.left_freq_index])
   {
-    Serial.print("best_pow = ");
-    Serial.println(pgm_read_float(&power_table[best_pow_level][result.left_freq_index]), 4);
+    power_print(pgm_read_float(&power_table[best_pow_level][result.left_freq_index]));
     return pgm_read_float(&power_table[best_pow_level][result.left_freq_index]);
   }
   else
@@ -63,10 +59,8 @@ uint16_t Display::find_power_level(uint8_t target_power, uint64_t target_freq )
     float out_max = pgm_read_float(&power_table[best_pow_level][result.right_freq_index]);
 
     float after_my_map = my_map(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max);
-    uint16_t final = after_my_map * 100;
-    Serial.print("after_my_map = ");
-    Serial.println(after_my_map, 4);
-    return final;
+    power_print(after_my_map);
+    return after_my_map;
   }
 }
 
