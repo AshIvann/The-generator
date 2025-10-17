@@ -4,6 +4,20 @@
 Encoder enc1(CLK, DT, SW, TYPE2);
 
 
+const byte ROWS = 4;   // Количество рядов 
+const byte COLS = 4;   // Количество строк 
+
+char keys[ROWS][COLS] = 
+{
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {A3, A2, A1, A0}; // Выводы, подключение к строкам
+byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к столбцам  
+
 void My_encoder:: update_freq()
 {
     Display dis;

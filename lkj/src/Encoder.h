@@ -12,6 +12,15 @@ extern Keypad keypad;
 #define DT 3
 #define SW 4
 
+extern const byte ROWS ;   // Количество рядов 
+extern const byte COLS ;   // Количество строк 
+
+extern char keys[4][4];
+
+
+extern byte rowPins[4]  ;//подключение к строкам
+extern byte colPins[4] ; // Выводы, подключение к столбцам  
+
 class My_encoder
 {
     public:
