@@ -172,7 +172,7 @@ Display:: freqs Display::detect_index_of_side_freq(uint64_t target_freq )
   
   side_freq_index.right_freq_index = side_freq_index.left_freq_index = closed_freq(target_freq);
 
-  if(min_diff == 0)                                     //проверить частоту попадающую ровно в частоты таблицы
+  if(min_diff == 0)                                                                         //проверить частоту попадающую ровно в частоты таблицы
     return side_freq_index;                               
   if(target_freq < check_freq[side_freq_index.left_freq_index])
     side_freq_index.left_freq_index = side_freq_index.left_freq_index - 1;
@@ -188,7 +188,7 @@ float Display:: my_map(float x, float in_min, float in_max, float out_min, float
 }
 
 // template <typename T> 
-// T Display<T>:: my_map(T x, T in_min, T in_max, T out_min, T out_max)
+// T Display<T>:: my_mapp(T x, T in_min, T in_max, T out_min, T out_max)
 // {
 //   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 // }

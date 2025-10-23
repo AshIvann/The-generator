@@ -176,9 +176,7 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R60, 0x0000);
   writeRegister(R59, 0x0001);
   writeRegister(R46, 0x07FC);
-  //writeRegister(R45, 0b1101000011011110);   //No output power boost
   writeRegister(R45, 0b1100000011011110);  //Maximum output power boost
-  //writeRegister(R44, 0b0001111010100011);   //OUTA_PWR =30
   set_out_power(power);
   writeRegister(R43, low_16bit(fractional_divider));
   writeRegister(R42, high_16bit(fractional_divider));

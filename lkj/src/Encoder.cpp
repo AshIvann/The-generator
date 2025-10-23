@@ -1,29 +1,12 @@
 #include "Encoder.h"
 
-// Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+
 Encoder enc1(CLK, DT, SW, TYPE2);
 
 
-const byte ROWS = 4;   // Количество рядов 
-const byte COLS = 4;   // Количество строк 
-
-char keys[ROWS][COLS] = 
+void My_encoder:: freq_selection()
 {
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'*','0','#','D'}
-};
-
-byte rowPins[ROWS] = {A3, A2, A1, A0}; // Выводы, подключение к строкам
-byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к столбцам  
-
-void My_encoder:: update_freq()
-{
-    Display dis;
-    LMX2595 gen;
-
-    bool freq_changed = false;
+    freq_changed = false;
     if(enc1.isRight())
     {
         freq_set_by_encoder += freq_increment;
@@ -43,21 +26,16 @@ void My_encoder:: update_freq()
         freq_changed = true;
     }
 
-    if(freq_changed)
-    {
-        dis.print_freq(freq_set_by_encoder, 100, 30);  
-        gen.set_freq(freq_set_by_encoder);
-    }
+    // if(freq_changed)                                         //перенес в main,нужно проверить как работает 
+    // {
+    //     dis.print_freq(freq_set_by_encoder, 100, 30);  
+    //     gen.set_freq(freq_set_by_encoder);
+    // }
 }
 
-void My_encoder:: update_power()
+void My_encoder:: power_selection()
 {
-    Display dis;
-    LMX2595 gen;
-    My_encoder my_enc;
-
-    bool power_changed = false;
-
+    power_changed = false;
     if(enc1.isRight())
     {
         power_counter += power_increment;
@@ -76,6 +54,7 @@ void My_encoder:: update_power()
         }
         power_changed = true;
     }
+/*
     if(power_changed)
     {
         uint8_t best_pow_level = dis.get_best_level(power_counter, freq_set_by_encoder);
@@ -93,7 +72,8 @@ void My_encoder:: update_power()
 
         gen.set_out_power(best_pow_level);
     }
-}
+*/
+    }
 
 boolean My_encoder:: click()
 {
@@ -105,20 +85,34 @@ boolean My_encoder:: click()
     return click_changed;
 }
 
-void My_keybord::scan_key(uint8_t key)
+
+const byte ROWS = 4;   // Количество рядов 
+const byte COLS = 4;   // Количество строк 
+
+char keys[ROWS][COLS] = 
 {
-    Display dis;
-    LMX2595 gen;
-    My_encoder my_enc;
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {A3, A2, A1, A0}; // Выводы, подключение к строкам
+byte colPins[COLS] = {6, 5, A5, A4}; // Выводы, подключение к столбцам  
+
+
+void My_keybord:: scan_key(uint8_t key)
+{
     if(key >= '0' && key <= '9')
     {
-        freq_set_by_key = (freq_set_by_key * 10) + (key - 48);
+        entered_number = (entered_number * 10) + (key - 48);
         tft.fillRect(0, 150, 200, 22, ST77XX_BLACK);       
         tft.setCursor(0, 150);
-        tft.print((uint32_t)freq_set_by_key);
+        tft.print((uint32_t)entered_number);
     }
     else if(key == 'A')
     {
+        freq_set_by_key = entered_number;
         // tft.setCursor(100,30);
         // tft.fillRect(100, 30, SCREEN_WIDTH, 21, ST77XX_BLACK);
         if(freq_set_by_key < 12e6)
@@ -133,39 +127,41 @@ void My_keybord::scan_key(uint8_t key)
             tft.print("19000.000000 MHz");
         }
 
-        dis.print_freq(freq_set_by_key, 100, 30);
-        gen.set_freq(freq_set_by_key);
+        // dis.print_freq(freq_set_by_key, 100, 30);
+        // gen.set_freq(freq_set_by_key);
 
         remember_freq = freq_set_by_key;
         freq_set_by_key = 0;
     }
-    // else if(key == 'B')
-    // {
-    //     freq_set_by_key = freq_set_by_key * 1000000;
-    //     // if(freq_set_by_key < 12e6)
-    //     // {
-    //     //     freq_set_by_key = 12e6;
-    //     //     tft.print("12.000000 MHz");
-    //     // }
-    //     // if(freq_set_by_key >= 19e9)
-    //     // {
-    //     //     freq_set_by_key = 19e9;
-    //     //     tft.print("19000.000000 MHz");
-    //     // }
-    //     dis.print_freq(freq_set_by_key, 100, 30);
-    //     gen.set_freq(freq_set_by_key);
-    //     remember_freq = freq_set_by_key;
-    //     freq_set_by_key = 0;
-    // }
+    else if(key == 'B')
+    {
+        freq_set_by_key = freq_set_by_key * 1000000;
+        if(freq_set_by_key < 12e6)
+        {
+            freq_set_by_key = 12e6;
+            tft.print("12.000000 MHz");
+        }
+        if(freq_set_by_key >= 19e9)
+        {
+            freq_set_by_key = 19e9;
+            tft.print("19000.000000 MHz");
+        }
+        // dis.print_freq(freq_set_by_key, 100, 30);
+        // gen.set_freq(freq_set_by_key);
+        remember_freq = freq_set_by_key;
+        freq_set_by_key = 0;
+    }
     else if(key == 'D')
     {
-        freq_set_by_key = freq_set_by_key / 10;
-        dis.print_freq(freq_set_by_key, 0, 150);
+        // freq_set_by_key = freq_set_by_key / 10;
+        entered_number = freq_set_by_key / 10;
+        // dis.print_freq(freq_set_by_key, 0, 150);
     }
 }
-
 
 uint64_t My_keybord:: get_rem()
 {
     return remember_freq;
 }
+
+

@@ -12,8 +12,9 @@
 #define TFT_CS   7     //chip select
 
 
+
 extern Adafruit_ST7789 tft;
-//template <typename T>
+// template <typename T>
 class Display 
 {
     public:
@@ -22,6 +23,7 @@ class Display
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
     
+
     private:
         uint8_t get_number_of_characters(uint64_t);
        
@@ -37,7 +39,7 @@ class Display
         };
         freqs detect_index_of_side_freq(uint64_t);
         float my_map(float, float, float, float, float);
-        //T my_map(T, T, T, T, T);                          //почему-то ломает freqs
+        // T my_mapp(T, T, T, T, T);                          //почему-то ломает freqs
     
 
         uint64_t min_diff = 0;
