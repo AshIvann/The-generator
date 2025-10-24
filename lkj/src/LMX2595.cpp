@@ -38,6 +38,26 @@ void LMX2595::set_freq(uint64_t fout)
   return;
 }
 
+void LMX2595::power_increas(void)
+{
+  power_value++;
+}
+
+void LMX2595::power_decreas(void)
+{
+  power_value--;
+}
+
+void LMX2595:: freq_increas(void)
+{
+  freq_value++;
+}
+
+void LMX2595::freq_decreas(void)
+{
+  freq_value--;
+}
+
 void LMX2595::writeRegister(uint8_t addr, uint16_t data)
 {
   struct st_packet 
@@ -202,4 +222,149 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R7,  0x40B2);
   writeRegister(R1,  0x0808);
   writeRegister(R0,  0b0010010000011100);            
+}
+
+
+float LMX2595::find_power_level(uint8_t target_power, uint64_t target_freq )
+{
+  freqs result = detect_index_of_side_freq(target_freq);
+  best_pow_level = get_best_level(target_power, target_freq);
+  
+  if(check_freq[result.right_freq_index] == check_freq[result.left_freq_index])
+  {
+    // power_print(pgm_read_float(&power_table[best_pow_level][result.left_freq_index]));
+    return pgm_read_float(&power_table[best_pow_level][result.left_freq_index]);
+  }
+  else
+  {
+    float out_min = pgm_read_float(&power_table[best_pow_level][result.left_freq_index]);
+    float out_max = pgm_read_float(&power_table[best_pow_level][result.right_freq_index]);
+
+    float after_my_map = my_map(target_freq, check_freq[result.left_freq_index], check_freq[result.right_freq_index], out_min, out_max);
+    // power_print(after_my_map);
+    return after_my_map;
+  }
+}
+
+uint8_t LMX2595:: closed_freq(uint64_t target_freq)
+{
+  uint8_t closest_index = 0;
+  //min_diff = abs(1. * (target_freq - check_freq[0]));   //для stm 
+  min_diff = abs((target_freq - check_freq[0]));          //для arduino
+
+  for(uint8_t i = 1; i < CHECK_FREQ; i++)                                                              
+  {
+    uint64_t current_freq = check_freq[i];
+    uint64_t diff = abs((target_freq - current_freq)) ;             //для arduino
+    // uint64_t diff = abs(1. * (target_freq - current_freq)) ;     //для stm    
+  
+    if(diff < min_diff)                 
+    {
+      min_diff = diff;
+      closest_index = i;
+    }
+  }
+  return closest_index;
+}
+
+uint8_t LMX2595::detect_best_left_level(uint8_t target_power, uint64_t target_freq)
+{
+  uint8_t best_left_level;
+  freqs result = detect_index_of_side_freq(target_freq);
+  float best_left_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.left_freq_index]));
+  for(uint8_t level = 1; level <= POWER_LEVEL; level++ )
+  {
+    float current_dbm = pgm_read_float(&power_table[level][result.left_freq_index]);                             
+    float diff = abs((target_power - current_dbm));
+    if(abs(diff) <= abs(best_left_power_diff))
+    {
+      best_left_power_diff = diff;
+      best_left_level = level;
+    }
+  }
+  return best_left_level;
+}
+
+uint8_t LMX2595::detect_best_right_level(uint8_t target_power, uint64_t target_freq)
+{
+  uint32_t best_right_level;
+  freqs result = detect_index_of_side_freq(target_freq);
+  float best_right_power_diff = abs(target_power - pgm_read_float(&power_table[0][result.right_freq_index]));
+  for(uint8_t level = 1; level <= POWER_LEVEL; level++ )
+  {
+    float current_dbm = pgm_read_float(&power_table[level][result.right_freq_index]);
+    float diff = abs(target_power - current_dbm);
+    if(abs(diff) <= abs(best_right_power_diff))
+    {
+      best_right_power_diff = diff;
+      best_right_level = level;
+    }
+  }
+  return best_right_level;
+}
+
+uint8_t LMX2595::get_best_level(uint8_t target_power, uint64_t target_freq)
+{
+  uint8_t best_level;
+  uint8_t best_right_level = detect_best_right_level(target_power, target_freq);
+  uint8_t best_left_level = detect_best_left_level(target_power, target_freq);
+  float best_right_power_diff = rt_power_diff(target_power, target_freq);
+  float best_left_power_diff = lt_power_diff(target_power, target_freq);
+
+  if(best_right_power_diff <= best_left_power_diff)
+  {
+    best_level = best_right_level;
+  }
+  else
+  { 
+    best_level = best_left_level;
+  }
+  return best_level;
+}
+
+float LMX2595::rt_power_diff(uint8_t target_power, uint64_t target_freq)
+{
+  freqs result = detect_index_of_side_freq(target_freq);
+  uint32_t best_right_level = detect_best_right_level(target_power, result.right_freq_index);
+
+  float right_power_diff = abs(target_power - pgm_read_float(&power_table[best_right_level][result.right_freq_index]));
+  
+  return right_power_diff;
+}
+
+float LMX2595::lt_power_diff(uint8_t target_power, uint64_t target_freq)
+{
+  freqs result = detect_index_of_side_freq(target_freq);
+  uint32_t best_left_level = detect_best_left_level(target_power, result.left_freq_index);
+
+  float left_power_diff = abs(target_power - pgm_read_float(&power_table[best_left_level][result.left_freq_index]));
+  
+  return left_power_diff;
+}
+
+LMX2595:: freqs LMX2595::detect_index_of_side_freq(uint64_t target_freq )
+{
+  freqs side_freq_index;
+  if(target_freq <= check_freq[0])
+  {
+    side_freq_index.left_freq_index = 0;
+    side_freq_index.right_freq_index = 0;
+    return side_freq_index;
+  }
+  
+  side_freq_index.right_freq_index = side_freq_index.left_freq_index = closed_freq(target_freq);
+
+  if(min_diff == 0)                                                                         //проверить частоту попадающую ровно в частоты таблицы
+    return side_freq_index;                               
+  if(target_freq < check_freq[side_freq_index.left_freq_index])
+    side_freq_index.left_freq_index = side_freq_index.left_freq_index - 1;
+  else
+    side_freq_index.right_freq_index = side_freq_index.left_freq_index + 1;
+  
+  return side_freq_index;
+}
+
+float LMX2595:: my_map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

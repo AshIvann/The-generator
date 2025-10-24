@@ -5,78 +5,137 @@
 
 #include "LMX2595.h"
 #include "Display.h"
-#include "Encoder.h"
+#include "Encoder_keypad.h"
 
 LMX2595 gen;
 Display dis;
-My_encoder my_enc;
-My_keybord my_key;
+
 Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
 Keypad keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+My_keybord my_key;
 
+bool is_freq_changed = false;
+bool is_power_changed = false;
+bool click_changed = true;
+uint8_t power_value = 5;
+uint64_t freq_value = 425000000;
 
-uint64_t freq_set_by_encoder = 425000000;
-uint8_t power_counter = 5;
-
-bool freq_changed = false;          //нужно что-то придумать. Тк переменная не обращается в false после первого вызова
-bool power_changed = false;         //нужно что-то придумать. Тк переменная не обращается в false после первого вызова    
-
+uint64_t full_number;
 void setup()
 {
-    tft.init(240, 320);
-    tft.fillScreen(ST77XX_BLACK);   
-    tft.setTextColor(ST77XX_WHITE);
-    tft.setRotation(1);
-    tft.setTextSize(3);
-   
-    tft.fillRect(165, 31, 20, 3, ST77XX_BLUE);
-    tft.setCursor(10, 30);
-                                      
-    tft.print("Freq: ");
-    tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
-    // dis.print_freq(my_enc.freq_set_by_encoder, 100, 30);
-    
-    tft.setCursor(10, 85);                          
-    tft.print("Power: ");
-    tft.print(power_counter);
-    tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
+    dis.set_display();
+    dis.print_freq(freq_value);
+    dis.power_print(power_value);
 
     enc1.setTickMode(TYPE2);
-    gen.set_generator(425000000, power_counter); 
+    gen.set_generator(freq_value, power_value); 
 }
-
 
 void loop()
 {
     enc1.tick(); 
     char key = keypad.getKey();
-    if (key)
+
+    if(key >= 0 && key <= 9)
     {
-        my_key.scan_key(key);                                               
-        dis.print_freq(my_key.get_rem(), 100, 30);
-        gen.set_freq(my_key.get_rem());
-        freq_set_by_encoder = my_key.get_rem();
+        full_number = my_key.build_number(key);
+        dis.my_print(full_number, 50, SCREEN_HEIGHT);
     }
-    if(my_enc.click())              //изменение частоты                                 
+    else if(key == 'A')
     {
-        tft.fillRect(8, 51, 240, 2, ST77XX_BLUE);
-        tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
-        my_enc.freq_selection();
-        if(freq_changed)
+        freq_value = full_number;
+        my_key.entered_number = 0;
+        if(freq_value < 12e6)
         {
-            dis.print_freq(freq_set_by_encoder, 100, 30);  
-            gen.set_freq(freq_set_by_encoder);
+            freq_value = 12e6;
+        }
+        else if(freq_value >= 19e9)
+        {
+            freq_value = 19e9;
+        }
+        dis.print_freq(freq_value);
+        gen.set_freq(freq_value);
+    }
+    else if(key == 'B')
+    {
+        freq_value = full_number * 10000000;
+        my_key.entered_number = 0;
+        if(freq_value < 12e6)
+        {
+            freq_value = 12e6;
+        }
+        else if(freq_value >= 19e9)
+        {
+            freq_value = 19e9;
+        }
+        dis.print_freq(freq_value);
+        gen.set_freq(freq_value);
+    }
+    else if(key == 'D')
+    {
+        full_number = my_key.delete_digit();
+    }
+
+    if(my_key.isClick())
+    {
+        click_changed = !click_changed;
+    }
+    if(click_changed)                                           //изменение частоты                                 
+    {
+        tft.fillRect(8, SCREEN_HEIGHT/3, 240, 2, ST77XX_BLUE);
+        tft.fillRect(8, SCREEN_HEIGHT/2, SCREEN_WIDTH, 2, ST77XX_BLACK);
+        if(my_key.isRight())
+        {
+            gen.freq_increas();
+            if(freq_value >= 19e9) 
+            {
+                freq_value = 19e9;
+            }
+            is_freq_changed = !is_freq_changed;
+        }
+        if(my_key.isLeft())
+        {
+            gen.freq_decreas();
+            if(freq_value <= 12e6) 
+            {
+                freq_value = 12e6;
+            }
+            is_freq_changed = !is_freq_changed;
+        }
+        if(is_freq_changed)
+        {
+            dis.print_freq(freq_value);  
+            gen.set_freq(freq_value);
+            is_freq_changed = !is_freq_changed;
         }
     }
-    else                            //изменение мощности 
+    else                                                        //изменение мощности 
     {
-        tft.fillRect(8, 106, 265, 2, ST77XX_BLUE);
-        tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
-        my_enc.power_selection();
-        if(power_changed)
+        tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);
+        tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
+        if(my_key.isRight())
         {
-            uint8_t best_pow_level = dis.get_best_level(power_counter, freq_set_by_encoder);
-            dis.power_print(dis.find_power_level(power_counter, freq_set_by_encoder));
+            gen.power_increas();
+            if(power_value >= 11) 
+            {
+                power_value = 11;
+            }
+            is_power_changed = !is_power_changed;
+        }
+        if(my_key.isLeft())
+        {
+            gen.power_decreas();
+            if(power_value == 255) 
+            {
+                power_value = 0;
+            }
+            
+            is_power_changed = !is_power_changed;
+        }
+        if(is_power_changed)
+        {
+            uint8_t best_pow_level = gen.get_best_level(power_value, freq_value);
+            dis.power_print(gen.find_power_level(power_value, freq_value));
 /*
             tft.setCursor(0, 150);                                                                          //контроль устанавливаемых параметров, потом убрать
             tft.fillRect(0, 150, SCREEN_WIDTH, 20, ST77XX_BLACK);
@@ -89,6 +148,7 @@ void loop()
             tft.print(best_pow_level);
 */
             gen.set_out_power(best_pow_level);
+            is_power_changed = !is_power_changed;
         }
     }       
 }
