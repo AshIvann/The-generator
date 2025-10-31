@@ -16,7 +16,7 @@ extern char keys[ROWS][COLS];
 extern uint8_t rowPins[ROWS];     //подключение к строкам
 extern uint8_t colPins[COLS];     // Выводы, подключение к столбцам  
 
-class My_keybord : public Encoder
+class My_keybord
 {
     // public:
     // My_keybord(char *userKeymap, uint8_t *row, uint8_t *col, uint8_t numRows, uint8_t numCols) 

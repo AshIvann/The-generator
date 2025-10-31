@@ -1,5 +1,6 @@
 #include "LMX2595.h"
 
+
 void LMX2595::set_freq(uint64_t fout)
 {
     
@@ -172,6 +173,72 @@ uint16_t LMX2595::replace_bits_8_to_13(uint16_t original, uint8_t new_bits)
   uint16_t final = (original & mask) | shifted_bits;
 
   return final;
+}
+
+
+
+void LMX2595::set_ramp()
+{
+  // Program RESET = 1 to reset registers
+  // writeRegister(R0, 0b0010010000011110);
+  // //Program RESET = 0 to remove reset
+  // writeRegister(R0, 0b0010010000011100);
+
+/*
+  writeRegister(R105, 0b111111000000);        //ramp manual, ramp1_next_trig, RAMP_DLY_CNT
+  writeRegister(R106, 0b0000000000010000);    //RAMP_TRIG_CAL
+  writeRegister(R80, low_16bit(671088640));   //ramp_thresh
+  writeRegister(R79, high_16bit(671088640));  //ramp_thresh
+  writeRegister(R39, low_16bit(16777216));    //PLL_den
+  writeRegister(R38, low_16bit(16777216));    //PLL_den
+  writeRegister(R60, 0);                      //LD_DLY
+
+
+  writeRegister(R100, 252);                   //RAMP0_LEN = 252
+  writeRegister(R99, 0x999A);                 //RAMP0_INC = 6658458 
+  writeRegister(R98, 0x0065);                 //RAMP0_INC = 6658458, RAMP0_DLY
+  writeRegister(R101, 0b0000000000110000);    //RAMP0_NEXT_TRIG, RAMP0_NEXT, RAMP1_RST, RAMP1_DLY
+  writeRegister(R97, 0b1000100000000000);     //RAMP_BURST_TRIG, RAMP_TRIG(A/B), RAMP0_RST = 1
+  
+
+  writeRegister(R104, 252);                   //RAMP1_LEN = 252
+  writeRegister(R103, 0x999A);                //RAMP1_INC
+  writeRegister(R102, 0x65);                  //RAMP1_INC
+*/
+
+  //настройка VCOstart для начальной частоты ramp
+  writeRegister(R36, 750);    //PLL_N
+  writeRegister(R39, 0x0000); //PLL_DEN = 16777216
+  writeRegister(R38, 0x0100); //PLL_DEN = 16777216
+
+  writeRegister(R9, 0x0604);  //OSC_2X = 1
+  writeRegister(R12, 0x5001); //PLL_R_PRE = 1
+
+  writeRegister(R42, 0);      //PLL_NUM
+  writeRegister(R43, 0);      //PLL_NUM
+
+
+  writeRegister(R106, 0b0000000000010000);    //RAMP_TRIG_CAL
+  writeRegister(R105, 0b1111111111000000);    //ramp manual, ramp1_next_trig, RAMP_DLY_CNT, RAMP1_NEXT
+  writeRegister(R104, 500);                   //RAMP1_LEN = 2520
+  writeRegister(R103, 0x7AE1);                //RAMP1_INC = 1342177
+  writeRegister(R102, 0x14);                  //RAMP1_INC = 1342177
+  writeRegister(R101, 0b0000000000010000);    //RAMP0_NEXT_TRIG, RAMP0_NEXT, RAMP1_RST, RAMP1_DLY
+  writeRegister(R100, 500);                   //RAMP0_LEN = 2520
+  writeRegister(R99, 0x851F);                 //RAMP0_INC = 1072399647 
+  writeRegister(R98, 0x3FEB);                 //RAMP0_INC = 1072399647, RAMP0_DLY
+  writeRegister(R97, 0b1000100000000000);     //RAMP_BURST_TRIG, RAMP_TRIG(A/B), RAMP0_RST = 1
+  writeRegister(R80, low_16bit(16777216));    //ramp_thresh
+  writeRegister(R79, high_16bit(16777216));   //ramp_thresh
+  writeRegister(R60, 0);                      //LD_DLY
+
+  writeRegister(R75, 0b0000100100000000);     //CHDIV = 12
+
+ 
+  writeRegister(R45, 0b1100011011011111);     //OUTA_MUX = Channel divider, OUT_ISET = max, OUTB_PWR = 31
+
+  writeRegister(R0,  0b1010010000011100);     //вкл ramp mode
+
 }
 
 void LMX2595::set_generator(uint64_t fout, uint8_t power)

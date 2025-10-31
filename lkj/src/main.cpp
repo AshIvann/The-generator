@@ -23,20 +23,36 @@ uint64_t freq_value = 425000000;
 uint64_t full_number;
 void setup()
 {
-    dis.set_display();
-    dis.print_freq(freq_value);
-    dis.power_print(power_value);
 
+    gen.set_generator(7500, 10);
+    gen.set_ramp();
+
+/*
+    dis.set_display();
+    tft.fillRect(165, 31, 20, 3, ST77XX_BLUE);
+    tft.setCursor(10, 30);
+                                      
+    tft.print("Freq: ");
+    tft.fillRect(8, 106, 265, 2, ST77XX_BLACK);
+
+    tft.setCursor(10, 85);                          
+    tft.print("Power: ");
+    tft.print(power_value);
+    tft.fillRect(8, 51, 240, 2, ST77XX_BLACK);
+
+    dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
+*/
 }
 
 void loop()
 {
+/*
     enc1.tick(); 
     char key = keypad.getKey();
 
-    if(key >= 0 && key <= 9)
+    if(key >= '0' && key <= '9')
     {
         full_number = my_key.build_number(key);
         dis.my_print(full_number, 50, SCREEN_HEIGHT);
@@ -53,7 +69,7 @@ void loop()
         {
             freq_value = 19e9;
         }
-        dis.print_freq(freq_value);
+        dis.print_freq(freq_value, 100, 30);
         gen.set_freq(freq_value);
     }
     else if(key == 'B')
@@ -68,7 +84,7 @@ void loop()
         {
             freq_value = 19e9;
         }
-        dis.print_freq(freq_value);
+        dis.print_freq(freq_value, 100, 30);
         gen.set_freq(freq_value);
     }
     else if(key == 'D')
@@ -76,7 +92,7 @@ void loop()
         full_number = my_key.delete_digit();
     }
 
-    if(my_key.isClick())
+    if(enc1.isClick())
     {
         click_changed = !click_changed;
     }
@@ -84,7 +100,7 @@ void loop()
     {
         tft.fillRect(8, SCREEN_HEIGHT/3, 240, 2, ST77XX_BLUE);
         tft.fillRect(8, SCREEN_HEIGHT/2, SCREEN_WIDTH, 2, ST77XX_BLACK);
-        if(my_key.isRight())
+        if(enc1.isRight())
         {
             gen.freq_increas();
             if(freq_value >= 19e9) 
@@ -93,7 +109,7 @@ void loop()
             }
             is_freq_changed = !is_freq_changed;
         }
-        if(my_key.isLeft())
+        if(enc1.isLeft())
         {
             gen.freq_decreas();
             if(freq_value <= 12e6) 
@@ -104,16 +120,17 @@ void loop()
         }
         if(is_freq_changed)
         {
-            dis.print_freq(freq_value);  
+            dis.print_freq(freq_value, 100, 30); 
             gen.set_freq(freq_value);
             is_freq_changed = !is_freq_changed;
         }
     }
+    
     else                                                        //изменение мощности 
     {
         tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);
         tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
-        if(my_key.isRight())
+        if(enc1.isRight())
         {
             gen.power_increas();
             if(power_value >= 11) 
@@ -122,7 +139,7 @@ void loop()
             }
             is_power_changed = !is_power_changed;
         }
-        if(my_key.isLeft())
+        if(enc1.isLeft())
         {
             gen.power_decreas();
             if(power_value == 255) 
@@ -136,19 +153,20 @@ void loop()
         {
             uint8_t best_pow_level = gen.get_best_level(power_value, freq_value);
             dis.power_print(gen.find_power_level(power_value, freq_value));
-/*
+
             tft.setCursor(0, 150);                                                                          //контроль устанавливаемых параметров, потом убрать
             tft.fillRect(0, 150, SCREEN_WIDTH, 20, ST77XX_BLACK);
             tft.print("pwr_count = ");
-            tft.print(power_counter);                                           
+            tft.print(power_value);                                           
 
             tft.setCursor(0, 190);                                                                          //контроль устанавливаемых параметров, потом убрать
             tft.fillRect(0, 190, SCREEN_WIDTH, 20, ST77XX_BLACK);
             tft.print("set_pwr = ");
             tft.print(best_pow_level);
-*/
+
             gen.set_out_power(best_pow_level);
             is_power_changed = !is_power_changed;
         }
-    }       
+    }
+*/    
 }

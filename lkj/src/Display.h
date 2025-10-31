@@ -15,8 +15,8 @@ extern Adafruit_ST7789 tft;
 class Display 
 {
     public:
-        void print_freq(uint64_t);
-        void power_print(uint8_t);
+        void print_freq(uint64_t, uint8_t, uint8_t);
+        void power_print(float);
         void my_print(uint64_t, uint16_t, uint16_t);
         void set_display();
 

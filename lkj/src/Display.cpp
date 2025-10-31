@@ -10,14 +10,14 @@ void Display::set_display()
   tft.fillRect(165, 31, 20, 3, ST77XX_BLUE);
 }
 
-void Display::print_freq(uint64_t fr)
+void Display::print_freq(uint64_t fr, uint8_t x ,uint8_t y)
 {
+  // uint32_t first_five = fr / (uint32_t)1e6;
   uint32_t first_five = fr / (uint32_t)1e6;
   uint32_t last_six = fr % (uint32_t)1e6;
   
-  tft.fillRect(10, freq_print_height, SCREEN_WIDTH, 21, ST77XX_BLACK);
-  tft.setCursor(10, freq_print_height);
-  tft.print("Freq: ");
+  tft.setCursor(x,y);
+  tft.fillRect(x, y, SCREEN_WIDTH, 21, ST77XX_BLACK);
   tft.print(first_five);
   tft.print(".");
   uint8_t number_of_characters = get_number_of_characters(last_six);
@@ -29,12 +29,12 @@ void Display::print_freq(uint64_t fr)
   tft.print("MHz");
 }
 
-void Display::power_print(uint8_t for_print)
+void Display::power_print(float for_print)
 { 
-  tft.fillRect(10, power_print_height, SCREEN_WIDTH, 21, ST77XX_BLACK); 
-  tft.setCursor(10,power_print_height);
+  tft.fillRect(10, 85, SCREEN_WIDTH, 21, ST77XX_BLACK); 
+  tft.setCursor(10 ,85);
   tft.print("power: ");
-  tft.setCursor(110, power_print_height);
+  tft.setCursor(110, 85);
   tft.print(for_print);
   tft.print(" Units");
 }
