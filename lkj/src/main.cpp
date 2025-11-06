@@ -18,16 +18,19 @@ bool is_freq_changed = false;
 bool is_power_changed = false;
 bool click_changed = true;
 uint8_t power_value = 5;
-uint64_t freq_value = 425000000;
+uint64_t freq_value = 7500000000;
 
 uint64_t full_number;
 void setup()
 {
 
-    gen.set_generator(7500, 10);
-    gen.set_ramp();
+    //gen.set_generator(7500, 10);
+    //gen.set_ramp2();
+    
+    // gen.set_ramp();
+    // gen.reset();
+    
 
-/*
     dis.set_display();
     tft.fillRect(165, 31, 20, 3, ST77XX_BLUE);
     tft.setCursor(10, 30);
@@ -43,12 +46,15 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-*/
+
 }
+
+
 
 void loop()
 {
-/*
+    
+
     enc1.tick(); 
     char key = keypad.getKey();
 
@@ -126,47 +132,51 @@ void loop()
         }
     }
     
-    else                                                        //изменение мощности 
+    if(!click_changed)                                                 //изменение мощности 
     {
+
+        gen.set_ramp2();
+
+        // click_changed = true;
+
         tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);
         tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
-        if(enc1.isRight())
-        {
-            gen.power_increas();
-            if(power_value >= 11) 
-            {
-                power_value = 11;
-            }
-            is_power_changed = !is_power_changed;
-        }
-        if(enc1.isLeft())
-        {
-            gen.power_decreas();
-            if(power_value == 255) 
-            {
-                power_value = 0;
-            }
+        // if(enc1.isRight())
+        // {
+        //     gen.power_increas();
+        //     if(power_value >= 11) 
+        //     {
+        //         power_value = 11;
+        //     }
+        //     is_power_changed = !is_power_changed;
+        // }
+        // if(enc1.isLeft())
+        // {
+        //     gen.power_decreas();
+        //     if(power_value == 255) 
+        //     {
+        //         power_value = 0;
+        //     }
             
-            is_power_changed = !is_power_changed;
-        }
-        if(is_power_changed)
-        {
-            uint8_t best_pow_level = gen.get_best_level(power_value, freq_value);
-            dis.power_print(gen.find_power_level(power_value, freq_value));
+        //     is_power_changed = !is_power_changed;
+        // }
+        // if(is_power_changed)
+        // {
+        //     uint8_t best_pow_level = gen.get_best_level(power_value, freq_value);
+        //     dis.power_print(gen.find_power_level(power_value, freq_value));
 
-            tft.setCursor(0, 150);                                                                          //контроль устанавливаемых параметров, потом убрать
-            tft.fillRect(0, 150, SCREEN_WIDTH, 20, ST77XX_BLACK);
-            tft.print("pwr_count = ");
-            tft.print(power_value);                                           
+        //     tft.setCursor(0, 150);                                                                          //контроль устанавливаемых параметров, потом убрать
+        //     tft.fillRect(0, 150, SCREEN_WIDTH, 20, ST77XX_BLACK);
+        //     tft.print("pwr_count = ");
+        //     tft.print(power_value);                                           
 
-            tft.setCursor(0, 190);                                                                          //контроль устанавливаемых параметров, потом убрать
-            tft.fillRect(0, 190, SCREEN_WIDTH, 20, ST77XX_BLACK);
-            tft.print("set_pwr = ");
-            tft.print(best_pow_level);
+        //     tft.setCursor(0, 190);                                                                          //контроль устанавливаемых параметров, потом убрать
+        //     tft.fillRect(0, 190, SCREEN_WIDTH, 20, ST77XX_BLACK);
+        //     tft.print("set_pwr = ");
+        //     tft.print(best_pow_level);
 
-            gen.set_out_power(best_pow_level);
-            is_power_changed = !is_power_changed;
-        }
+        //     gen.set_out_power(best_pow_level);
+        //     is_power_changed = !is_power_changed;
+        // }
     }
-*/    
 }

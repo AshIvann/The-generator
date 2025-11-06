@@ -82,7 +82,8 @@ class LMX2595
         void freq_increas(void);
         void freq_decreas(void);
         void set_ramp();
-
+        void set_ramp2();
+        void reset();
         
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
