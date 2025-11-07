@@ -259,6 +259,8 @@ void LMX2595:: set_ramp2()
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
   writeRegister(R9, 0x0604);                    //OSC_2X = 1
   writeRegister(R0, 0b1010011000011100);        //enable ramp mode
+  //или
+  writeRegister(R0, 0b1010010000011100);        //enable ramp mode
 }
 
 

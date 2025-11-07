@@ -1,6 +1,5 @@
 #include "GyverEncoder.h"
 #include "Keypad.h"
-#include "Display.h"
 
 #define ROWS 4
 #define COLS 4
@@ -18,16 +17,6 @@ extern uint8_t colPins[COLS];     // Выводы, подключение к с�
 
 class My_keybord
 {
-    // public:
-    // My_keybord(char *userKeymap, uint8_t *row, uint8_t *col, uint8_t numRows, uint8_t numCols) 
-    // {
-    //     userKeymap = makeKeymap(keys);
-    //     row = rowPins;
-    //     col = colPins; 
-    //     numRows = ROWS;
-    //     numCols = COLS;
-    // }
-
     public:
         uint64_t build_number(uint8_t);
         uint64_t delete_digit();
