@@ -18,19 +18,11 @@ bool is_freq_changed = false;
 bool is_power_changed = false;
 bool click_changed = true;
 uint8_t power_value = 5;
-uint64_t freq_value = 7500000000;           //7.5 GHz
+uint64_t freq_value = 8000000000;           //8 GHz
 
 uint64_t full_number;
 void setup()
 {
-
-    //gen.set_generator(7500, 10);
-    //gen.set_ramp2();
-    
-    // gen.set_ramp();
-    // gen.reset();
-    
-
     dis.set_display();
     tft.fillRect(165, 31, 20, 3, ST77XX_BLUE);
     tft.setCursor(10, 30);
@@ -46,9 +38,7 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-
 }
-
 
 
 void loop()
@@ -59,7 +49,10 @@ void loop()
     if(key >= '0' && key <= '9')
     {
         full_number = my_key.build_number(key);
-        dis.my_print(full_number, 50, SCREEN_HEIGHT);
+        tft.fillRect(0,150,200,22, ST77XX_BLACK);
+        tft.setCursor(0,150);
+        tft.print((uint32_t)full_number);
+        // dis.my_print(full_number, 50, SCREEN_HEIGHT);
     }
     else if(key == 'A')
     {
@@ -97,7 +90,7 @@ void loop()
     }
     else if(key == '*')
     {
-        gen.set_ramp2();
+        gen.example_ramp();
 
         tft.setCursor(150, 120);
         tft.setTextColor(ST77XX_RED);
@@ -114,7 +107,8 @@ void loop()
         tft.fillRect(8, SCREEN_HEIGHT/2, SCREEN_WIDTH, 2, ST77XX_BLACK);
         if(enc1.isRight())
         {
-            gen.freq_increas();
+            freq_value++;
+
             if(freq_value >= 19e9) 
             {
                 freq_value = 19e9;
@@ -123,7 +117,8 @@ void loop()
         }
         if(enc1.isLeft())
         {
-            gen.freq_decreas();
+            freq_value--;
+
             if(freq_value <= 12e6) 
             {
                 freq_value = 12e6;
@@ -144,7 +139,7 @@ void loop()
         tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
         if(enc1.isRight())
         {
-            gen.power_increas();
+            power_value++;
             if(power_value >= 11) 
             {
                 power_value = 11;
@@ -153,7 +148,8 @@ void loop()
         }
         if(enc1.isLeft())
         {
-            gen.power_decreas();
+            power_value--;
+
             if(power_value == 255) 
             {
                 power_value = 0;

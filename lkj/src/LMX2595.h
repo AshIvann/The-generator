@@ -77,17 +77,19 @@ class LMX2595
         void set_freq(uint64_t);
         void set_out_power(uint16_t);
         void set_generator(uint64_t, uint8_t); 
-        void power_increas(void);
-        void power_decreas(void);
-        void freq_increas(void);
-        void freq_decreas(void);
         void set_ramp();
-        void set_ramp2();
+        void set_ramp2(uint64_t);
+        void example_ramp();
         void reset();
+
+        uint64_t calcul_ramp1_inc(uint64_t);
+        uint64_t calcul_ramp0_inc(uint64_t);
         
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
 
+
+        
     private:
         uint8_t closed_freq(uint64_t);
         uint8_t detect_best_left_level(uint8_t, uint64_t);
@@ -122,6 +124,9 @@ class LMX2595
         uint16_t replace_bits_8_to_13(uint16_t, uint8_t);
 
         
+        uint64_t pll_den = 16777216;
+        uint64_t Fpd = 10000;
+        uint64_t ramp_len = 10000;
         uint64_t min_diff = 0;
         uint64_t check_freq[CHECK_FREQ] = {25000000, 50000000, 75000000, 100000000, 150000000, 200000000, 250000000, 300000000, 400000000, 500000000, 600000000, 700000000, 800000000, 900000000, 1000000000, 1100000000, 1115000000, 1200000000, 1250000000, 1300000000, 1350000000, 1400000000, 1500000000, 1560000000, 1600000000, 1700000000, 1800000000, 1900000000, 2000000000, 2100000000, 2150000000, 2200000000, 2300000000, 2400000000, 2500000000, 2550000000, 2600000000, 2700000000, 2750000000, 2800000000, 2900000000};  
         uint8_t best_pow_level;
