@@ -162,9 +162,18 @@ void loop()
         }
     }
     
-    // if(!click_changed)                                                      //изменение мощности 
-    // {
-    //     tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);
+    uint32_t step = 50000000;
+    uint32_t len = 10000;
+    if(!click_changed)                                                       
+    {
+        for(uint8_t i = 0; i < 8; i++)
+        {
+            gen.dif_ramp(step, len);
+            step += 50000000;
+            delay(5000);
+        }
+
+    //     tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
     //     tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
     //     if(enc1.isRight())
     //     {
@@ -203,5 +212,5 @@ void loop()
     //         gen.set_out_power(best_pow_level);
     //         is_power_changed = !is_power_changed;
     //     }
-    // }
+    }
 }
