@@ -18,7 +18,7 @@ bool is_freq_changed = false;
 bool is_power_changed = false;
 bool click_changed = true;
 uint8_t power_value = 5;
-uint64_t freq_value = 7500000000;           //7.5 GHz
+uint64_t freq_value = 8000000000;           //8 GHz
 
 uint64_t full_number;
 void setup()
@@ -46,9 +46,7 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-
 }
-
 
 
 void loop()
@@ -172,9 +170,9 @@ void loop()
             step += 50000000;
             delay(5000);
         }
-
-    //     tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
-    //     tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
+click_changed = !click_changed;
+        tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
+        tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
     //     if(enc1.isRight())
     //     {
     //         gen.power_increas();
