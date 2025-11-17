@@ -18,7 +18,7 @@ bool is_freq_changed = false;
 bool is_power_changed = false;
 bool click_changed = true;
 uint8_t power_value = 5;
-uint64_t freq_value = 7500000000;           //7.5 GHz
+uint64_t freq_value = 8000000000;           //8 GHz
 
 uint64_t full_number;
 void setup()
@@ -48,7 +48,6 @@ void setup()
     gen.set_generator(freq_value, power_value); 
     // Serial.begin(9600);
 }
-
 
 
 void loop()

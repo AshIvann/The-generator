@@ -277,7 +277,6 @@ void LMX2595:: set_ramp1() //вроде как тут только ramp1 и ша
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
   writeRegister(R9, 0x0604);                    //OSC_2X = 1
   writeRegister(R0, 0b1010010000011100);        //enable ramp mode
-}
 
 
 void LMX2595::set_ramp2() //RAMP1_RST = 1; 
@@ -472,7 +471,6 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R1,  0x0808);
   writeRegister(R0,  0b0010010000011100);            
 }
-
 
 float LMX2595::find_power_level(uint8_t target_power, uint64_t target_freq )
 {
