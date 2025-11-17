@@ -2,6 +2,8 @@
 #include <Arduino.h>
 #include "power_table.h"
 
+#include "Display.h"
+
 #define DATAOUT 11//MOSI     
 #define DATAIN  12//MISO     
 #define SPICLOCK  13//sck    

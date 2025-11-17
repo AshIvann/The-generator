@@ -259,9 +259,7 @@ void LMX2595:: set_ramp1() //вроде как тут только ramp1 и ша
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
   writeRegister(R9, 0x0604);                    //OSC_2X = 1
   writeRegister(R0, 0b1010010000011100);        //enable ramp mode
-
 }
-
 
 
 void LMX2595::set_ramp2() //RAMP1_RST = 1; 
@@ -311,7 +309,7 @@ uint64_t LMX2595:: calcul_ramp0_inc(uint64_t ramp_step, uint16_t ramp_len)
 
 uint64_t LMX2595:: calcul_ramp1_inc(uint64_t ramp_step, uint16_t ramp_len)
 {
-  uint64_t ramp1_inc = 1073741824 - calcul_ramp1_inc(ramp_step, ramp_len);
+  uint64_t ramp1_inc = 1073741824 - calcul_ramp0_inc(ramp_step, ramp_len);
   return ramp1_inc;
 }
 
@@ -364,14 +362,17 @@ void LMX2595:: dif_ramp(uint32_t step, uint16_t len)
   writeRegister(R104, len);                                 //RAMP1_LEN
   writeRegister(R103, low_16bit(calcul_ramp1_inc(step, len)));   //RAMP1_INC
   writeRegister(R102, high_16bit(calcul_ramp1_inc(step, len)));  //максимум = 1 073 741 823
-
   writeRegister(R101, 0b0000000001110000);     // Double ramp length
   writeRegister(R100, len);                   //RAMP0_LEN
   writeRegister(R99, low_16bit(calcul_ramp0_inc(step, len)));            //RAMP0_INC = 335540
   writeRegister(R98, write_98reg(calcul_ramp0_inc(step, len)));          //максимум = 1 073 741 823
 
+
   writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0,  RAMP0_RST = 1
   writeRegister(R96, 0b1000001011111100);       //включил BURST(который определяет количество ramps), количество = 191    
+  // writeRegister(R97, 0b100010000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
+  // writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
+
 
   writeRegister(R86, 0);                        //RAMP_LIMIT_LOW[15:0] 
   writeRegister(R85, 0);                        //RAMP_LIMIT_LOW[31:16]
@@ -393,6 +394,7 @@ void LMX2595:: dif_ramp(uint32_t step, uint16_t len)
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
   writeRegister(R9, 0x0604);                    //OSC_2X = 1
   writeRegister(R0, 0b1010011000011100);        //enable ramp mode
+  
 }
 
 uint32_t LMX2595:: write_98reg(uint64_t incr)
@@ -452,7 +454,6 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R1,  0x0808);
   writeRegister(R0,  0b0010010000011100);            
 }
-
 
 float LMX2595::find_power_level(uint8_t target_power, uint64_t target_freq )
 {

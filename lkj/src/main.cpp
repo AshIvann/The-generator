@@ -46,7 +46,7 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-
+    // Serial.begin(9600);
 }
 
 
@@ -121,7 +121,8 @@ void loop()
          else if(key == 'D')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.set_ramp3();
+        // gen.set_ramp3();
+        gen.dif_ramp(100000000, 10000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(150, 120);
         tft.setTextColor(ST77XX_RED);
@@ -132,8 +133,10 @@ void loop()
     {
         click_changed = !click_changed;
     }
+
     if(click_changed)                                                       //изменение частоты                                 
     {
+        // Serial.println("first");
         tft.fillRect(8, SCREEN_HEIGHT/3, 240, 2, ST77XX_BLUE);
         tft.fillRect(8, SCREEN_HEIGHT/2, SCREEN_WIDTH, 2, ST77XX_BLACK);
         if(enc1.isRight())
@@ -166,15 +169,22 @@ void loop()
     uint32_t len = 10000;
     if(!click_changed)                                                       
     {
+
+        tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
+        tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
+        // Serial.println("second");
         for(uint8_t i = 0; i < 8; i++)
         {
-            gen.dif_ramp(step, len);
-            step += 50000000;
+            gen.set_generator(freq_value, power_value); 
+             gen.dif_ramp(step, len);
+             len -=1000;  
+            step += 500000000;
+            tft.fillRect(100, 100, SCREEN_WIDTH, 20, ST77XX_BLACK);
+            tft.setCursor(100,100);
+            tft.print(i);
             delay(5000);
         }
-
-    //     tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
-    //     tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
+        // click_changed = !click_changed;
     //     if(enc1.isRight())
     //     {
     //         gen.power_increas();
