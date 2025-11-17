@@ -46,13 +46,23 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-    // Serial.begin(9600);
+    Serial.begin(9600);
+    
 }
 
 
 
 void loop()
 {
+    uint32_t pll_n = gen.calculation_of_pll_n(30005500);
+    // Serial.print("pll_n = ");
+    // Serial.println(pll_n );
+    uint32_t pll_num = gen.calculation_of_pll_num(30005500);
+    // Serial.print("pll_num = ");
+    // Serial.println(pll_num);
+
+Serial.end();
+    /*
     enc1.tick(); 
     char key = keypad.getKey();
 
@@ -133,6 +143,7 @@ void loop()
     {
         click_changed = !click_changed;
     }
+
 
     if(click_changed)                                                       //изменение частоты                                 
     {
@@ -223,4 +234,5 @@ void loop()
     //         is_power_changed = !is_power_changed;
     //     }
     }
+    */
 }
