@@ -99,12 +99,19 @@ byte LMX2595::send_SPI_byte(uint8_t val1)
   return SPDR;                    // return the received byte
 }
 
+uint32_t phase_detector_freq = 20;
+
 uint32_t LMX2595::calculation_of_pll_n(uint64_t fout)
 {
   st_freq_params st = get_divider_value(fout);
   
-  uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / 10 + st.int_part_of_frac_div;   
-
+  uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / phase_detector_freq + st.int_part_of_frac_div; 
+  Serial.print("st.chdiv = ");
+  Serial.println(st.chdiv);
+  Serial.print("first_five_of_freq = ");
+  Serial.println(st.first_five_of_freq );  
+  Serial.print("int_part_of_frac_div = ");
+  Serial.println(st.int_part_of_frac_div );  
   return n_devider;
 }
 
@@ -112,9 +119,16 @@ uint32_t LMX2595::calculation_of_pll_num(uint64_t fout)
 {
   st_freq_params st = get_divider_value(fout);                                                                                                              
   
-  uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv);
-  uint32_t frac_part_of_n_div = (((float)st.first_five_of_freq * (float)st.chdiv) / 10.0) - ((st.first_five_of_freq * st.chdiv) / 10);
-  uint64_t frac_div = full_frac_div - (st.int_part_of_frac_div * 10e6) + (frac_part_of_n_div * 10e6); 
+  uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv) / (1000000.0 * phase_detector_freq) * 10000;
+  uint32_t frac_part_of_n_div = (((float)st.first_five_of_freq * (float)st.chdiv) / phase_detector_freq) - ((st.first_five_of_freq * st.chdiv) / phase_detector_freq);
+  uint32_t frac_div = (full_frac_div - (st.int_part_of_frac_div * 10000) + (frac_part_of_n_div * 10000)) * 100; 
+ 
+   Serial.print("full_frac_div = ");
+  Serial.println(full_frac_div);
+  Serial.print("frac_part_of_n_div = ");
+  Serial.println(frac_part_of_n_div);
+  Serial.print("frac_div = ");
+  Serial.println(frac_div);
 
   return frac_div;
 }
@@ -125,6 +139,7 @@ uint16_t LMX2595::low_16bit(uint32_t value)
   uint16_t low  = (uint16_t)(value & 0xFFFF);
   return low; 
 }
+
 
 uint16_t LMX2595::high_16bit(uint32_t value) 
 {
@@ -153,7 +168,9 @@ LMX2595::st_freq_params LMX2595:: get_divider_value(uint64_t fout)
   st.first_five_of_freq = fout / 1000000;
   st.last_six_of_freq = fout % 1000000;
   st.chdiv = divider_values[find_chdiv(fout)];
-  st.int_part_of_frac_div = (st.last_six_of_freq * st.chdiv) / 10e6;
+  st.int_part_of_frac_div = (st.last_six_of_freq * st.chdiv) / (1000000 * phase_detector_freq);
+  // Serial.print("st.chdiv = ");
+  // Serial.println(st.chdiv);
   return st;
 }
 
@@ -226,6 +243,7 @@ void LMX2595:: set_ramp1() //вроде как тут только ramp1 и ша
   writeRegister(R80, low_16bit(16777216));      //RAMP_THRESH[15:0]
 
 */
+
 
   writeRegister(R106, 0);                       //RAMP_TRIG_CAL = 0
   writeRegister(R105, 0b0000000000010000);                       //RAMP_MANUAL = 0, RAMP1_NEXT = 0, RAMP1_NEXT_TRIG
@@ -312,7 +330,6 @@ uint64_t LMX2595:: calcul_ramp1_inc(uint64_t ramp_step, uint16_t ramp_len)
   uint64_t ramp1_inc = 1073741824 - calcul_ramp0_inc(ramp_step, ramp_len);
   return ramp1_inc;
 }
-
 
 
 void LMX2595::set_ramp3()
@@ -444,16 +461,18 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R19, 0x27B7);
   writeRegister(R17, 0x012C);
   writeRegister(R16, 0x0080);        
-  writeRegister(R14, 0x1E70);
+  //writeRegister(R14, 0x1E70);
+  writeRegister(R14, 0x1E10);                         //charge pump = 6mA, проверить как будет выглядеть сигнал, раньше был 15 
   writeRegister(R12, 0x5002);
   writeRegister(R11, 0x0018);
   writeRegister(R10, 0x10D8);
-  writeRegister(R9,  0x1604);
+  writeRegister(R9,  0x1604);                         //OSC_2X - Enabled
   writeRegister(R8,  0x2000);
   writeRegister(R7,  0x40B2);
   writeRegister(R1,  0x0808);
   writeRegister(R0,  0b0010010000011100);            
 }
+
 
 float LMX2595::find_power_level(uint8_t target_power, uint64_t target_freq )
 {
@@ -566,6 +585,7 @@ float LMX2595::lt_power_diff(uint8_t target_power, uint64_t target_freq)
 {
   freqs result = detect_index_of_side_freq(target_freq);
   uint32_t best_left_level = detect_best_left_level(target_power, result.left_freq_index);
+
 
   float left_power_diff = abs(target_power - pgm_read_float(&power_table[best_left_level][result.left_freq_index]));
   

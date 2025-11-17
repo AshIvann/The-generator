@@ -72,6 +72,8 @@
 
 extern uint8_t power_value;
 extern uint64_t freq_value;
+extern uint32_t phase_detector_freq;
+
 
 class LMX2595 
 {
@@ -90,6 +92,12 @@ class LMX2595
         void dif_ramp(uint32_t, uint16_t);
         uint32_t write_98reg(uint64_t);
         
+        
+        uint32_t calculation_of_pll_n(uint64_t);
+        uint32_t calculation_of_pll_num(uint64_t);
+        uint8_t find_chdiv(uint64_t);
+
+
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
         
@@ -114,11 +122,9 @@ class LMX2595
         void writeRegister(uint8_t, uint16_t); 
         byte send_SPI_byte(uint8_t);
         char spi_transfer(volatile uint8_t);
-        uint32_t calculation_of_pll_n(uint64_t);
-        uint32_t calculation_of_pll_num(uint64_t);
+
         uint16_t low_16bit(uint32_t);
         uint16_t high_16bit(uint32_t); 
-        uint8_t find_chdiv(uint64_t);
         struct st_freq_params
         {
             uint32_t first_five_of_freq;
@@ -134,6 +140,7 @@ class LMX2595
         uint64_t pll_den = 16777216;
         uint64_t Fpd = 10000000;
         // uint64_t ramp_len = 10000;
+
 
         uint64_t min_diff = 0;
         uint64_t check_freq[CHECK_FREQ] = {25000000, 50000000, 75000000, 100000000, 150000000, 200000000, 250000000, 300000000, 400000000, 500000000, 600000000, 700000000, 800000000, 900000000, 1000000000, 1100000000, 1115000000, 1200000000, 1250000000, 1300000000, 1350000000, 1400000000, 1500000000, 1560000000, 1600000000, 1700000000, 1800000000, 1900000000, 2000000000, 2100000000, 2150000000, 2200000000, 2300000000, 2400000000, 2500000000, 2550000000, 2600000000, 2700000000, 2750000000, 2800000000, 2900000000};  
