@@ -86,7 +86,7 @@ class LMX2595
         void freq_increas(void);
         void freq_decreas(void);
         void set_ramp1();
-        void set_ramp2(uint64_t);
+        void set_ramp2();
         void set_ramp3();
         void reset();
         void dif_ramp(uint32_t, uint16_t);

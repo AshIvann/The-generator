@@ -106,29 +106,24 @@ uint32_t LMX2595::calculation_of_pll_n(uint64_t fout)
   st_freq_params st = get_divider_value(fout);
   
   uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / phase_detector_freq + st.int_part_of_frac_div; 
-  Serial.print("st.chdiv = ");
-  Serial.println(st.chdiv);
-  Serial.print("first_five_of_freq = ");
-  Serial.println(st.first_five_of_freq );  
-  Serial.print("int_part_of_frac_div = ");
-  Serial.println(st.int_part_of_frac_div );  
+  // Serial.print("st.chdiv = ");
+  // Serial.println(st.chdiv);
+  // Serial.print("first_five_of_freq = ");
+  // Serial.println(st.first_five_of_freq );  
+  // Serial.print("int_part_of_frac_div = ");
+  // Serial.println(st.int_part_of_frac_div );  
   return n_devider;
 }
 
 uint32_t LMX2595::calculation_of_pll_num(uint64_t fout)      
 {
-  st_freq_params st = get_divider_value(fout);                                                                                                              
+    st_freq_params st = get_divider_value(fout);                                                                                                              
   
-  uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv) / (1000000.0 * phase_detector_freq) * 10000;
-  uint32_t frac_part_of_n_div = (((float)st.first_five_of_freq * (float)st.chdiv) / phase_detector_freq) - ((st.first_five_of_freq * st.chdiv) / phase_detector_freq);
-  uint32_t frac_div = (full_frac_div - (st.int_part_of_frac_div * 10000) + (frac_part_of_n_div * 10000)) * 100; 
- 
-   Serial.print("full_frac_div = ");
-  Serial.println(full_frac_div);
-  Serial.print("frac_part_of_n_div = ");
-  Serial.println(frac_part_of_n_div);
-  Serial.print("frac_div = ");
-  Serial.println(frac_div);
+  uint32_t full_frac_div = (st.last_six_of_freq * st.chdiv) / (1000000.0 * phase_detector_freq) * 1e6;
+  double float_frac_part_of_n_div = (((float)st.first_five_of_freq * (float)st.chdiv) / phase_detector_freq);
+
+  uint32_t frac_part_of_n_div = ((float_frac_part_of_n_div + 0.01) - ((st.first_five_of_freq * st.chdiv) / phase_detector_freq)) * 10;
+  uint32_t frac_div = (full_frac_div - (st.int_part_of_frac_div * 1000000) + (frac_part_of_n_div * 100000));// * 10;            //нужно проверить нужна ли эта 10 и в каких случаях
 
   return frac_div;
 }
@@ -139,7 +134,6 @@ uint16_t LMX2595::low_16bit(uint32_t value)
   uint16_t low  = (uint16_t)(value & 0xFFFF);
   return low; 
 }
-
 
 uint16_t LMX2595::high_16bit(uint32_t value) 
 {
@@ -275,11 +269,11 @@ void LMX2595:: set_ramp1() //вроде как тут только ramp1 и ша
   writeRegister(R38, 0xffff);                    //PLL_DEN = 
   writeRegister(R36, 750);                      //PLL_N, чтобы начальная частота VCO = 7500 MHz 
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
-  writeRegister(R9, 0x0604);                    //OSC_2X = 1
+  writeRegister(R9, 0x0604);                    //OSC_2X = 2
   writeRegister(R0, 0b1010010000011100);        //enable ramp mode
+}
 
-
-void LMX2595::set_ramp2() //RAMP1_RST = 1; 
+void LMX2595:: set_ramp2() //RAMP1_RST = 1; 
 {
   writeRegister(R106, 0);                       //RAMP_TRIG_CAL = 0
   writeRegister(R105, 0b0000000000000000);                       //RAMP_MANUAL = 0, RAMP1_NEXT = 0, RAMP1_NEXT_TRIG
@@ -313,8 +307,6 @@ void LMX2595::set_ramp2() //RAMP1_RST = 1;
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
   writeRegister(R9, 0x0604);                    //OSC_2X = 1
   writeRegister(R0, 0b1010011000011100);        //enable ramp mode
-
-
 }
 
 
@@ -331,22 +323,26 @@ uint64_t LMX2595:: calcul_ramp1_inc(uint64_t ramp_step, uint16_t ramp_len)
 }
 
 
-void LMX2595::set_ramp3()
+void LMX2595::set_ramp3()                                                                                                               //Fpd = 20, Fvco = 7500, N_DEV = 375,  
 {
   
   writeRegister(R106, 0b0000000000000000);                       //RAMP_TRIG_CAL = 0
   writeRegister(R105, 0b0000000000000000);                       //RAMP_MANUAL = 0, RAMP1_NEXT = 0, RAMP1_NEXT_TRIG
-  writeRegister(R104, 0x1111);                   //RAMP1_LEN
-  writeRegister(R103, low_16bit(1073741790));   //RAMP1_INC = 1073741790 (стр 36)
-  writeRegister(R102, high_16bit(1073741790));  //RAMP1_INC = 1073741790 (стр 36)
+  writeRegister(R104, 0x07D0);                                                                                                          //RAMP1_LEN
+  writeRegister(R103, low_16bit(1073699881));                                                                                           //RAMP1_INC = 1073699881 (стр 36)
+  writeRegister(R102, high_16bit(1073699881));                                                                                          //RAMP1_INC = 1073699881 (стр 36)
   writeRegister(R101, 0b0000000000010000);      //RAMP0_NEXT_TRIG = 0, RAMP0_NEXT = 1, RAMP1_RST =0(стр36)
-  writeRegister(R100, 0x1111);                   //RAMP0_LEN
+  writeRegister(R100, 0x07D0);                                                                                                          //RAMP0_LEN
   
-  writeRegister(R99, 0xffff);                    //RAMP0_INC = 335540
-  writeRegister(R98, 0b1111111111111101);                        //RAMP0_DLY = 1(стр 36)
+  writeRegister(R99, 0xA3D7);                                                                                                           //RAMP0_INC = 41943
+  writeRegister(R98, 0b0000000000000001);                                                                                               //RAMP0_DLY = 1(стр 36)
   
-  writeRegister(R97, 0b100010000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
-  writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
+  writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0,  RAMP0_RST = 1
+  writeRegister(R96, 0b1000001011111100);       //включил BURST(который определяет количество ramps), количество = 191    
+  // writeRegister(R97, 0b100010000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
+  // writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
+
+
   writeRegister(R86, 0);                        //RAMP_LIMIT_LOW[15:0] 
   writeRegister(R85, 0);                        //RAMP_LIMIT_LOW[31:16]
   writeRegister(R84, 0);                        //RAMP_LIMIT_LOW[0]      на стр 32 написано, что может быть 0
@@ -364,9 +360,10 @@ void LMX2595::set_ramp3()
   writeRegister(R42, 0);                        //PLL_NUM = 0
   writeRegister(R39, 0x0000);                   //PLL_DEN = 16777216
   writeRegister(R38, 0x100);                    //PLL_DEN = 16777216
-  writeRegister(R36, 750);                      //PLL_N, чтобы начальная частота VCO = 7500 MHz 
+  writeRegister(R36, 375);                      //PLL_N, чтобы начальная частота VCO = 7500 MHz 
+  writeRegister(R11, 0x0018);
   writeRegister(R12, 0x5001);                   //PLL_R_PRE = 1
-  writeRegister(R9, 0x0604);                    //OSC_2X = 1
+  writeRegister(R9, 0x1604);                                                                                                                                                        //OSC_2X = 2
   writeRegister(R0, 0b1010011000011100);        //enable ramp mode
   
 }
