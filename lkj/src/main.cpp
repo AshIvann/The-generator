@@ -18,7 +18,7 @@ bool is_freq_changed = false;
 bool is_power_changed = false;
 bool click_changed = true;
 uint8_t power_value = 5;
-uint64_t freq_value = 8000000000;           //8 GHz
+uint64_t freq_value = 7500000000;           //7.5 GHz
 
 uint64_t full_number;
 void setup()
@@ -50,8 +50,18 @@ void setup()
 }
 
 
+
 void loop()
 {
+    uint32_t pll_n = gen.calculation_of_pll_n(30005500);
+    // Serial.print("pll_n = ");
+    // Serial.println(pll_n );
+    uint32_t pll_num = gen.calculation_of_pll_num(30005500);
+    // Serial.print("pll_num = ");
+    // Serial.println(pll_num);
+
+Serial.end();
+    /*
     enc1.tick(); 
     char key = keypad.getKey();
 
@@ -132,6 +142,7 @@ void loop()
     {
         click_changed = !click_changed;
     }
+
 
     if(click_changed)                                                       //изменение частоты                                 
     {
@@ -222,4 +233,5 @@ void loop()
     //         is_power_changed = !is_power_changed;
     //     }
     }
+    */
 }

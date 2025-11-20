@@ -472,6 +472,7 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R0,  0b0010010000011100);            
 }
 
+
 float LMX2595::find_power_level(uint8_t target_power, uint64_t target_freq )
 {
   freqs result = detect_index_of_side_freq(target_freq);
