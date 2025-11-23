@@ -88,6 +88,7 @@ class LMX2595
         void set_ramp1();
         void set_ramp2();
         void set_ramp3();
+        void set_ramp4();
         void reset();
         void dif_ramp(uint32_t, uint16_t);
         uint32_t write_98reg(uint64_t);
@@ -138,7 +139,7 @@ class LMX2595
         
         
         uint64_t pll_den = 16777216;
-        uint64_t Fpd = 10000000;
+        uint32_t phase_detector_freq = 20; //в МГц
         // uint64_t ramp_len = 10000;
 
 

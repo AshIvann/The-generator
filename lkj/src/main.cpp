@@ -46,7 +46,7 @@ void setup()
     dis.print_freq(freq_value, 100, 30);
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
-    // Serial.begin(9600);
+    Serial.begin(9600);
 }
 
 
@@ -112,30 +112,30 @@ void loop()
     else if(key == '*')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.set_ramp1();
+        gen.set_ramp3();
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(150, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("RAMP1 ON");
+        tft.print("RAMP3 ON");
     }
         else if(key == '#')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.set_ramp2();
+        gen.set_ramp4();
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(150, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("RAMP2 ON");
+        tft.print("RAMP4 ON");
     }
          else if(key == 'D')
     {
         gen.set_generator(freq_value, power_value); 
         // gen.set_ramp3();
-        gen.dif_ramp(100000000, 10000);
+        gen.dif_ramp(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(150, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("RAMP3 ON");
+        tft.print("RAMP_dif ON");
     }
 
     if(enc1.isClick())
@@ -175,20 +175,19 @@ void loop()
         }
     }
     
-    uint32_t step = 50000000;
-    uint32_t len = 10000;
+    uint32_t step = 100000000;
+    uint32_t len = 2000;
     if(!click_changed)                                                       
     {
 
         tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
         tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
         // Serial.println("second");
-        for(uint8_t i = 0; i < 8; i++)
+        for(uint8_t i = 0; i < 3; i++)
         {
             gen.set_generator(freq_value, power_value); 
-             gen.dif_ramp(step, len);
-             len -=1000;  
-            step += 500000000;
+            gen.dif_ramp(step, len);
+            step += 200000000;
             tft.fillRect(100, 100, SCREEN_WIDTH, 20, ST77XX_BLACK);
             tft.setCursor(100,100);
             tft.print(i);
