@@ -430,10 +430,10 @@ void LMX2595:: dif_ramp(uint32_t step, uint16_t len)
   writeRegister(R98, write_98reg(calcul_ramp0_inc(step, len)));          //максимум = 1 073 741 823
 
 
-  writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0,  RAMP0_RST = 1
-  writeRegister(R96, 0b1000001011111100);       //включил BURST(который определяет количество ramps), количество = 191    
-  // writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
-  // writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
+  // writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0,  RAMP0_RST = 1
+  // writeRegister(R96, 0b1000001011111100);       //включил BURST(который определяет количество ramps), количество = 191    
+  writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
+  writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
 
 
   writeRegister(R86, 0);                        //RAMP_LIMIT_LOW[15:0] 

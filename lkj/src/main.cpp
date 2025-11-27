@@ -112,30 +112,32 @@ void loop()
     else if(key == '*')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.dif_ramp_R101_R97_RAMP_RST_ON(100000000, 2000);
+        gen.dif_ramp_R105(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("dif_ramp_RAMP_RST_ON");
+        tft.print("dif_ramp_R105");
     }
         else if(key == '#')
     {
+        
         gen.set_generator(freq_value, power_value); 
-        gen.dif_ramp_ramp_lim(100000000, 2000);
-        tft.fillRect(150,120,200,22, ST77XX_BLACK);
-        tft.setCursor(0, 120);
-        tft.setTextColor(ST77XX_RED);
-        tft.print("dif_ramp_ramp_lim");
-    }
-         else if(key == 'D')
-    {
-        gen.set_generator(freq_value, power_value); 
-        // gen.set_ramp3();
         gen.dif_ramp_R101_single_ramp_lenght(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
         tft.print("dif_ramp_single_len");
+        
+    }
+         else if(key == 'D')
+    {
+        gen.set_generator(freq_value, power_value); 
+        // gen.set_ramp3();
+        gen.ramp(100000000, 2000);
+        tft.fillRect(150,120,200,22, ST77XX_BLACK);
+        tft.setCursor(0, 120);
+        tft.setTextColor(ST77XX_RED);
+        tft.print("ramp");
     }
 
     if(enc1.isClick())
