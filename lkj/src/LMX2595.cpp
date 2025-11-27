@@ -29,13 +29,13 @@ void LMX2595::set_freq(uint64_t fout)
   chdiv_reg = reg_divider[find_chdiv(fout)];
 
   uint64_t pll_n = calculation_of_pll_n(fout);
-  uint32_t jjj = pll_n;
+  // uint32_t jjj = pll_n;
   uint64_t fractional_divider = calculation_of_pll_num(fout);
-  uint32_t bbb = fractional_divider;
-   Serial.print("pll_n = ");
-  Serial.println(jjj);
-    Serial.print("fractional_divider = ");
-  Serial.println(bbb);
+  // uint32_t bbb = fractional_divider;
+  //  Serial.print("pll_n = ");
+  // Serial.println(jjj);
+  //   Serial.print("fractional_divider = ");
+  // Serial.println(bbb);
   writeRegister(R75, chdiv_reg);                                                            //проверить все ли нормально для частот >7500
   writeRegister(R36, pll_n);
   writeRegister(R43, low_16bit(fractional_divider));
@@ -432,7 +432,7 @@ void LMX2595:: dif_ramp(uint32_t step, uint16_t len)
 
   writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0,  RAMP0_RST = 1
   writeRegister(R96, 0b1000001011111100);       //включил BURST(который определяет количество ramps), количество = 191    
-  // writeRegister(R97, 0b100010000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
+  // writeRegister(R97, 0b1000100000000000);        //RAMP_BURST_TRIG = 0(стр 36),  RAMP0_RST = 1(стр 36) 
   // writeRegister(R96, 0);                        //RAMP_BURST_COUNT = 0(стр 36), RAMP_BURST_EN = 0
 
 
