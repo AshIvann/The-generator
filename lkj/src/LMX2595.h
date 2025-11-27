@@ -97,10 +97,11 @@ class LMX2595
         void dif_ramp_R101_R97_RAMP_RST_OFF(uint32_t, uint16_t);                            //хрень полная, постоянно скачет, ничего нормального не видно
         void dif_ramp_R38_R39_PLL_DEN(uint32_t, uint16_t);                                  //хрень полная, постоянно скачет, ничего нормального не видно 
         void dif_ramp_Ramp_trash(uint32_t, uint16_t);                                       //такаяже хрень, как и с dif_ramp_R38_R39_PLL_DEN
-        void dif_ramp_ramp_lim(uint32_t, uint16_t);                                         //при большом span вроде нормально(свеча расширяется снизу), но при уменьшении span получается хрень 
+        void dif_ramp_ra8mp_lim(uint32_t, uint16_t);                                        //получаются какието рога  
         void dif_ramp_R106(uint32_t, uint16_t);                                             //хрень полная, постоянно скачет, ничего нормального не видно 
         void dif_ramp_R105(uint32_t, uint16_t);                                             //хрень полная, постоянно скачет, ничего нормального не видно 
-        void dif_ramp_R101_single_ramp_lenght(uint32_t, uint16_t);                          //видны свечи при span = 6 MHz 
+        void dif_ramp_R101_single_ramp_lenght(uint32_t, uint16_t);                          //узкий сигнал
+        void dif_ramp_R101_double_ramp_lenght(uint32_t, uint16_t);  //аналог dif_ramp_R101_single_ramp_lenght кроме R101               //узкий сигнал
         uint32_t write_98reg(uint64_t);
         
         

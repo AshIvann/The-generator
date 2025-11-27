@@ -121,11 +121,11 @@ void loop()
         else if(key == '#')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.dif_ramp_R101_R97_RAMP_RST_OFF(100000000, 2000);
+        gen.dif_ramp_ramp_lim(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("dif_ramp_RAMP_RST_OFF");
+        tft.print("dif_ramp_ramp_lim");
     }
          else if(key == 'D')
     {
