@@ -306,7 +306,7 @@ void LMX2595:: dif_ramp_R101_single_ramp_lenght(uint32_t step, uint16_t len)
   writeRegister(R104, len);                                 //RAMP1_LEN
   writeRegister(R103, low_16bit(calcul_ramp1_inc(step, len)));   //RAMP1_INC
   writeRegister(R102, high_16bit(calcul_ramp1_inc(step, len)));  //максимум = 1 073 741 823
-  writeRegister(R101, 0b0000000000110000);     // Double ramp length
+  writeRegister(R101, 0b0000000011100000);     // Double ramp length
   writeRegister(R100, len);                   //RAMP0_LEN
   writeRegister(R99, low_16bit(calcul_ramp0_inc(step, len)));            //RAMP0_INC = 335540
   writeRegister(R98, write_98reg(calcul_ramp0_inc(step, len)));          //максимум = 1 073 741 823

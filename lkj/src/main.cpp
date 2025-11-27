@@ -112,20 +112,20 @@ void loop()
     else if(key == '*')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.dif_ramp_R38_R39_PLL_DEN(100000000, 2000);
+        gen.dif_ramp_R101_R97_RAMP_RST_ON(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
-        tft.setCursor(150, 120);
+        tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("dif_ramp_PLL_DEN");
+        tft.print("dif_ramp_RAMP_RST_ON");
     }
         else if(key == '#')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.dif_ramp_R101_R97_RAMP_RST_ON(100000000, 2000);
+        gen.dif_ramp_R101_R97_RAMP_RST_OFF(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
-        tft.setCursor(150, 120);
+        tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
-        tft.print("dif_ramp_RST_OFF");
+        tft.print("dif_ramp_RAMP_RST_OFF");
     }
          else if(key == 'D')
     {
@@ -133,7 +133,7 @@ void loop()
         // gen.set_ramp3();
         gen.dif_ramp_R101_single_ramp_lenght(100000000, 2000);
         tft.fillRect(150,120,200,22, ST77XX_BLACK);
-        tft.setCursor(150, 120);
+        tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
         tft.print("dif_ramp_single_len");
     }
@@ -191,6 +191,7 @@ void loop()
             tft.setCursor(150, 120);
             tft.setTextColor(ST77XX_RED);
             tft.print("RAMP_dif");
+            delay(5000);
             // step += 200000000;
             // tft.fillRect(100, 100, SCREEN_WIDTH, 20, ST77XX_BLACK);
             // tft.setCursor(100,100);
