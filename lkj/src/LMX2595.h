@@ -81,32 +81,12 @@ class LMX2595
         void set_freq(uint64_t);
         void set_out_power(uint16_t);
         void set_generator(uint64_t, uint8_t); 
-        void power_increas(void);
-        void power_decreas(void);
-        void freq_increas(void);
-        void freq_decreas(void);
-        void set_ramp1();
-        void set_ramp2();
-        void set_ramp3();
-        void set_ramp4();
         void reset();
 
-
-        void dif_ramp(uint32_t, uint16_t);                                                                                          //свеча, в независимости от burst
-        void dif_ramp_R101_R97_RAMP_RST_ON(uint32_t, uint16_t);                             //хрень полная, постоянно скачет, ничего нормального не видно           если включить burst, то получаю свечу 
-        void dif_ramp_R101_R97_RAMP_RST_OFF(uint32_t, uint16_t);                            //хрень полная, постоянно скачет, ничего нормального не видно           если включить burst, то получаю свечу, почемуто смещается относильно нормальной частоты
-        void dif_ramp_R38_R39_PLL_DEN(uint32_t, uint16_t);                                  //хрень полная, постоянно скачет, ничего нормального не видно           если включить burst, то получаю свечу
-        void dif_ramp_Ramp_trash(uint32_t, uint16_t);                                       //такаяже хрень, как и с dif_ramp_R38_R39_PLL_DEN                       если включить burst, то получаю свечу
-        void dif_ramp_ramp_lim(uint32_t, uint16_t);                                        //получаются какието рога                                                если включить burst, все теже рога 
-        void dif_ramp_R106(uint32_t, uint16_t);                                             //хрень полная, постоянно скачет, ничего нормального не видно           если включить burst, то странная хрень, постоянно дергается, немного похоже на свечу 
-        void dif_ramp_R105(uint32_t, uint16_t);                                             //хрень полная, постоянно скачет, ничего нормального не видно           если включить burst, то получаю свечу
-        void dif_ramp_R101_single_ramp_lenght(uint32_t, uint16_t);                          //узкий сигнал                                                          если включить burst, то получаю свечу
-        void dif_ramp_R101_double_ramp_lenght(uint32_t, uint16_t);  //аналог dif_ramp_R101_single_ramp_lenght кроме R101               //узкий сигнал               если включить burst, то получаю свечу
-        
-        
+        void dif_ramp(uint32_t, uint16_t);
         void ramp(uint32_t, uint16_t);                                                      //работает, движение есть 
-        void ramp2(uint32_t, uint16_t);                                                      //работает, движение есть 
-        uint32_t write_98reg(uint64_t);
+        void ramp2(uint32_t, uint16_t);                                                     //работает, движение есть 
+        uint32_t write_98reg(uint64_t, bool);
         
         
         uint32_t calculation_of_pll_n(uint64_t);
@@ -155,6 +135,7 @@ class LMX2595
         
         uint64_t pll_den = 16777216;
         uint32_t phase_detector_freq = 20; //в МГц
+        uint64_t Fpd = 20000000;           // в герцах, для расчета ramp_inc 
         // uint64_t ramp_len = 10000;
 
 
