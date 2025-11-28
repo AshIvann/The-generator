@@ -175,10 +175,14 @@ void LMX2595:: reset()
   writeRegister(R0, 0b0010010000011110);        //reset = 1
 }
 
+
+
 uint64_t LMX2595:: calcul_ramp0_inc(uint64_t ramp_step, uint16_t ramp_len)
 {
+  // uint64_t ramp0_inc = (ramp_step * pll_den)/((uint64_t)phase_detector_freq * ramp_len * 1000000); 
+ 
+  
   uint64_t ramp0_inc = (ramp_step * pll_den)/(Fpd * ramp_len);
-  //uint64_t ramp0_inc = (ramp_step * pll_den)/(phase_detector_freq * 1000000 * ramp_len);  //в таком виде не получается верно рассчитать  
   Serial.print("ramp0_inc = ");
   uint32_t xg = ramp0_inc;
   Serial.println(xg);

@@ -86,6 +86,7 @@ class LMX2595
         void dif_ramp(uint32_t, uint16_t);
         void ramp(uint32_t, uint16_t);                                                      //работает, движение есть 
         void ramp2(uint32_t, uint16_t);                                                     //работает, движение есть 
+        void ramp3(uint32_t, uint16_t);   
         uint32_t write_98reg(uint64_t, bool);
         
         
@@ -96,10 +97,10 @@ class LMX2595
 
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
-        
-    private:
         uint64_t calcul_ramp1_inc(uint64_t, uint16_t);
         uint64_t calcul_ramp0_inc(uint64_t, uint16_t);
+        
+    private:
 
         uint8_t closed_freq(uint64_t);
         uint8_t detect_best_left_level(uint8_t, uint64_t);

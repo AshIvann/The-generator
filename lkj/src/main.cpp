@@ -39,20 +39,23 @@ void setup()
     enc1.setTickMode(TYPE2);
     gen.set_generator(freq_value, power_value); 
     Serial.begin(9600);
+    Serial.println("hellow");
 }
 
 
 
 void loop()
 {
+
     // uint32_t pll_n = gen.calculation_of_pll_n(123456789);                                                    //нужно проверить правильно ли устанавливаются значения делителей при малых частотах(<30MHz)
     // Serial.print("pll_n = ");
     // Serial.println(pll_n );
     // uint32_t pll_num = gen.calculation_of_pll_num(123456789);
     // Serial.print("pll_num = ");
     // Serial.println(pll_num);
+    
+   
     // Serial.end();
-
     
     enc1.tick(); 
     char key = keypad.getKey();
@@ -102,18 +105,18 @@ void loop()
         tft.fillRect(0, 150, SCREEN_WIDTH, 22, ST77XX_BLACK);
         tft.setCursor(0, 150);
     }
-    else if(key == 'D')
-    {
-        tft.fillRect(0, 150, SCREEN_WIDTH, 22, ST77XX_BLACK);
-        full_number = full_number / 10;
-        tft.setCursor(0, 150);
-        tft.print((uint32_t)full_number);
-    }
+    // else if(key == 'D')
+    // {
+    //     tft.fillRect(0, 150, SCREEN_WIDTH, 22, ST77XX_BLACK);
+    //     full_number = full_number / 10;
+    //     tft.setCursor(0, 150);
+    //     tft.print((uint32_t)full_number);
+    // }
     else if(key == '*')
     {
         gen.set_generator(freq_value, power_value); 
         // gen.set_ramp3();
-        gen.ramp(100000000, 2000);
+        gen.ramp(200000000, 1500);
         tft.fillRect(0,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
@@ -123,19 +126,28 @@ void loop()
     else if(key == '#')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.ramp2(100000000, 2000);
+        gen.ramp2(400000000, 2000);
         tft.fillRect(0,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
         Serial.println("ramp2");
-        tft.print("ramp2");
-        
+        tft.print("ramp2");   
+    }
+     else if(key == 'D')
+    {
+        gen.set_generator(freq_value, power_value); 
+        gen.ramp3(100000000, 2000);
+        tft.fillRect(0,120,200,22, ST77XX_BLACK);
+        tft.setCursor(0, 120);
+        tft.setTextColor(ST77XX_RED);
+        Serial.println("ramp3");
+        tft.print("ramp3"); 
     }
 
-//     if(enc1.isClick())
-//     {
-//         click_changed = !click_changed;
-//     }
+    if(enc1.isClick())
+    {
+        click_changed = !click_changed;
+    }
 
 
 //     if(click_changed)                                                       //изменение частоты                                 
@@ -169,30 +181,36 @@ void loop()
 //         }
 //     }
     
-//     // uint32_t step = 100000000;
-//     // uint32_t len = 2000;
-//     if(!click_changed)                                                       
-//     {
+    uint32_t step = 500000000;
+    uint32_t len = 2000;
+    if(!click_changed)                                                       
+    {
 
-//         // tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
-//         // tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
-//         // Serial.println("second");
-//         // for(uint8_t i = 0; i < 3; i++)
-//         // {
-//             gen.set_generator(freq_value, power_value); 
-//             gen.dif_ramp(100000000, 2000);
-//             tft.fillRect(150,120,200,22, ST77XX_BLACK);
-//             tft.setCursor(150, 120);
-//             tft.setTextColor(ST77XX_RED);
-//             tft.print("RAMP_dif");
-//             delay(5000);
-//             // step += 200000000;
-//             // tft.fillRect(100, 100, SCREEN_WIDTH, 20, ST77XX_BLACK);
-//             // tft.setCursor(100,100);
-//             // tft.print(i);
-//             // delay(5000);
-//         // }
-        
+        tft.fillRect(8, SCREEN_HEIGHT/2, 265, 2, ST77XX_BLUE);                       //изменение мощности
+        tft.fillRect(8, SCREEN_HEIGHT/3, SCREEN_WIDTH, 2, ST77XX_BLACK);
+        Serial.println("second");
+        for(uint8_t i = 0; i < 16; i++)
+        {
+            gen.set_generator(freq_value, power_value); 
+            gen.ramp2(step, len);
+            tft.fillRect(0,120,200,22, ST77XX_BLACK);
+            tft.setCursor(0, 120);
+            tft.setTextColor(ST77XX_RED);
+            tft.print("len = ");
+            tft.print(len);
+            tft.setCursor(0, 140);
+            tft.print("step = ");
+            tft.print(step);
+            // step += 100000000;
+            len -=100;
+            delay(1000);
+            // tft.fillRect(100, 100, SCREEN_WIDTH, 20, ST77XX_BLACK);
+            // tft.setCursor(100,100);
+            // tft.print(i);
+            // delay(5000);
+        }
+        click_changed = !click_changed;
+        tft.fillRect(0,120,SCREEN_WIDTH,80, ST77XX_BLACK);
 
 
 //     //     if(enc1.isRight())
@@ -232,5 +250,5 @@ void loop()
 //     //         gen.set_out_power(best_pow_level);
 //     //         is_power_changed = !is_power_changed;
 //     //     }
-//     }
+    }
 }
