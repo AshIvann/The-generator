@@ -110,8 +110,8 @@ uint32_t LMX2595::calculation_of_pll_n(uint64_t fout)
   st_freq_params st = get_divider_value(fout);
   
   uint16_t n_devider = (st.first_five_of_freq * st.chdiv) / phase_detector_freq + st.int_part_of_frac_div; 
-  Serial.print("st.chdiv = ");
-  Serial.println(st.chdiv);
+  // Serial.print("st.chdiv = ");
+  // Serial.println(st.chdiv);
   // Serial.print("first_five_of_freq = ");
   // Serial.println(st.first_five_of_freq );  
    
@@ -506,8 +506,8 @@ void LMX2595::set_generator(uint64_t fout, uint8_t power)
   writeRegister(R19, 0x27B7);
   writeRegister(R17, 0x012C);
   writeRegister(R16, 0x0080);        
-  //writeRegister(R14, 0x1E70);
-  writeRegister(R14, 0x1E10);                         //charge pump = 6mA, проверить как будет выглядеть сигнал, раньше был 15 
+  writeRegister(R14, 0x1E70);
+  // writeRegister(R14, 0x1E10);                         //charge pump = 6mA, проверить как будет выглядеть сигнал, раньше был 15 
   writeRegister(R12, 0x5001);
   writeRegister(R11, 0x0018);
   writeRegister(R10, 0x10D8);

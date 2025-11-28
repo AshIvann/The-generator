@@ -105,7 +105,7 @@ class LMX2595
         
         
         void ramp(uint32_t, uint16_t);                                                      //работает, движение есть 
-        
+        void ramp2(uint32_t, uint16_t);                                                      //работает, движение есть 
         uint32_t write_98reg(uint64_t);
         
         
