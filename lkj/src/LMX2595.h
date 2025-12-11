@@ -84,9 +84,10 @@ class LMX2595
         void reset();
 
         void dif_ramp(uint32_t, uint16_t);
-        void ramp(uint32_t, uint16_t);                                                      //работает, движение есть 
-        void ramp2(uint32_t, uint16_t);                                                     //работает, движение есть 
-        void ramp3(uint32_t, uint16_t);   
+        void ramp(uint64_t, uint16_t);                                                      //работает, движение есть 
+        void ramp2(uint64_t, uint16_t);                                                     //работает, движение есть 
+        void ramp3(uint64_t, uint16_t);   
+        void ramp4(uint64_t, uint16_t);  
         uint32_t write_98reg(uint64_t, bool);
         
         

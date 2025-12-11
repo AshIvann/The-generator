@@ -136,12 +136,12 @@ void loop()
      else if(key == 'D')
     {
         gen.set_generator(freq_value, power_value); 
-        gen.ramp3(100000000, 2000);
+        gen.ramp4(100000000, 2000);
         tft.fillRect(0,120,200,22, ST77XX_BLACK);
         tft.setCursor(0, 120);
         tft.setTextColor(ST77XX_RED);
-        Serial.println("ramp3");
-        tft.print("ramp3"); 
+        Serial.println("ramp4");
+        tft.print("ramp4"); 
     }
 
     if(enc1.isClick())
@@ -192,7 +192,7 @@ void loop()
         for(uint8_t i = 0; i < 16; i++)
         {
             gen.set_generator(freq_value, power_value); 
-            gen.ramp2(step, len);
+            gen.ramp4(step, len);
             tft.fillRect(0,120,200,22, ST77XX_BLACK);
             tft.setCursor(0, 120);
             tft.setTextColor(ST77XX_RED);
