@@ -88,7 +88,7 @@ class LMX2595
         void ramp2(uint64_t, uint16_t);                                                     //работает, движение есть 
         void ramp3(uint64_t, uint16_t);   
         void ramp4(uint64_t, uint16_t);  
-        uint32_t write_98reg(uint64_t, bool);
+        uint16_t write_98reg(uint32_t, bool);                               //возвраящает 32 
         
         
         uint32_t calculation_of_pll_n(uint64_t);
@@ -98,8 +98,8 @@ class LMX2595
 
         float find_power_level(uint8_t, uint64_t);
         uint8_t get_best_level(uint8_t,  uint64_t);
-        uint64_t calcul_ramp1_inc(uint64_t, uint16_t);
-        uint64_t calcul_ramp0_inc(uint64_t, uint16_t);
+        uint32_t calcul_ramp1_inc(uint64_t, uint16_t);
+        uint32_t calcul_ramp0_inc(uint64_t, uint16_t);
         
     private:
 

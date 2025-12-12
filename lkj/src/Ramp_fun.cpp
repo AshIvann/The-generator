@@ -59,8 +59,8 @@ void LMX2595:: ramp2(uint64_t step, uint16_t len)
   writeRegister(R105, 0);                       
   writeRegister(R104, len);               
   uint32_t incr1 = calcul_ramp1_inc(step, len)  ;
-  writeRegister(R103, low_16bit(gd));   //RAMP1_INC
-  writeRegister(R102, high_16bit(gd));  //максимум = 1 073 741 823
+  writeRegister(R103, low_16bit(incr1));   //RAMP1_INC
+  writeRegister(R102, high_16bit(incr1));  //максимум = 1 073 741 823
 
 
   // writeRegister(R103, low_16bit(1073574052));   //RAMP1_INC
@@ -70,8 +70,8 @@ void LMX2595:: ramp2(uint64_t step, uint16_t len)
   writeRegister(R101, 0b0000000001110000);     // Double ramp length
   writeRegister(R100, len);                   //RAMP0_LEN
    incr1 = calcul_ramp0_inc(400000000, 2000);
-  writeRegister(R99, low_16bit(sfg));
-  writeRegister(R98, write_98reg(sfg, 1));
+  writeRegister(R99, low_16bit(incr1));
+  writeRegister(R98, write_98reg(incr1, 1));
   
   // writeRegister(R99, low_16bit(167772));            //RAMP0_INC = 335540
   // writeRegister(R98, write_98reg(167772, 1));          //максимум = 1 073 741 823

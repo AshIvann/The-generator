@@ -175,26 +175,24 @@ void LMX2595:: reset()
   writeRegister(R0, 0b0010010000011110);        //reset = 1
 }
 
+uint64_t first_frac ;
+uint64_t second_frac;
 
-
-uint64_t LMX2595:: calcul_ramp0_inc(uint64_t ramp_step, uint16_t ramp_len)
+uint32_t LMX2595:: calcul_ramp0_inc(uint64_t ramp_step, uint16_t ramp_len)
 {
-  // uint64_t ramp0_inc = (ramp_step * pll_den)/((uint64_t)phase_detector_freq * ramp_len * 1000000); 
- 
-  
-  uint64_t ramp0_inc = (ramp_step * pll_den)/(Fpd * ramp_len);
-  Serial.print("ramp0_inc = ");
-  uint32_t xg = ramp0_inc;
-  Serial.println(xg);
+  float f_first_frac = (ramp_step / 20000000.0);
+  float f_second_frac = (16777216.0 / ramp_len);
+  uint32_t ramp0_inc = f_first_frac * f_second_frac;
   return ramp0_inc;
 }
 
-uint64_t LMX2595:: calcul_ramp1_inc(uint64_t ramp_step, uint16_t ramp_len)
+uint32_t LMX2595:: calcul_ramp1_inc(uint64_t ramp_step, uint16_t ramp_len)
 {
-  uint64_t ramp1_inc = 1073741824 - calcul_ramp0_inc(ramp_step, ramp_len);
+  uint32_t ramp1_inc = 1073741824 - calcul_ramp0_inc(ramp_step, ramp_len);
+  Serial.print("ramp0_inc = ");
+  Serial.println(calcul_ramp0_inc(ramp_step, ramp_len));
   Serial.print("ramp1_inc = ");
-  uint32_t xg = ramp1_inc;
-  Serial.println(xg);
+  Serial.println(ramp1_inc);
   return ramp1_inc;
 }
 
@@ -240,7 +238,7 @@ void LMX2595:: dif_ramp(uint32_t step, uint16_t len)
   
 }
 
-uint32_t LMX2595:: write_98reg(uint64_t incr, bool double_DLY)
+uint16_t LMX2595:: write_98reg(uint32_t incr, bool double_DLY)
 {
   uint16_t high_bit = high_16bit(incr);
   uint32_t moved_bits = high_bit << 2;
